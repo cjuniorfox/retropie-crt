@@ -13,7 +13,7 @@ cat "${config}" >> /boot/config.txt
 #now the remaining scripts
 runcommand_scripts="resources/opt/retropie/configs"
 
-cp "${runcommand_scripts}"/all/runcommand-*/sh /opt/retropie/configs/all
+cp "${runcommand_scripts}"/all/runcommand-*.sh /opt/retropie/configs/all
 
 for f in "${runcommand_scripts}"/* ; do
     if [ -d "$f" ]; then
@@ -24,7 +24,7 @@ for f in "${runcommand_scripts}"/* ; do
             filename="/opt/retropie/configs${platform}/retroarch.cfg";
             file="$(cat "${filename}")"
             for  p in ${parameters} ; do
-                file=$(echo"${file}" | grep "${p}")
+                file=$(echo "${file}" | grep "${p}")
             done;
             cat "${conffile}" > "${filename}"
             echo "${file}" >> "${filename}"

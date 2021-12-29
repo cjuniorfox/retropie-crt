@@ -24,7 +24,7 @@ for f in "${runcommand_scripts}"/* ; do
             filename="/opt/retropie/configs${platform}/retroarch.cfg";
             file="$(cat "${filename}")"
             for  p in ${parameters} ; do
-                file=$(echo "${file}" | grep "${p}")
+                file=$(echo "${file}" | grep -v "${p}")
             done;
             cat "${conffile}" > "${filename}"
             echo "${file}" >> "${filename}"

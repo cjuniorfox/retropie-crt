@@ -36,36 +36,57 @@
 systemName="$1"
 emuName="$2"
 
-nes_snes(){
-	vcgencmd hdmi_timings 1024 1 74 98 141 240 0 3 3 16 0 0 4 60.100 0 21103018 1
-	tvservice -e "DMT 87" && sleep 2 && fbset -depth 32 -xres 256 -yres 240
-}
-megadrive(){
-	vcgencmd hdmi_timings 1920 1 48 192 240 240 1 3 3 16 0 0 0 59.92 0 37680000 1
-	tvservice -e "DMT 87"
-	fbset -depth 32 && fbset -depth 32 -xres 1920 -yres 240
 
+ntsc_megadrive(){
+	vcgencmd hdmi_timings 1280 1 93 123 176 240 0 3 3 17 0 0 1 59.920 0 26299768 1 && \
+	tvservice -e DMT\ 88 && tvservice -e DMT\ 87 && sleep 0.5 && \
+	fbset -xres 1280 -yres 240 -depth 32
+}
+ntsc_tms9918(){
+	vcgencmd hdmi_timings 1024 1 74 98 141 240 0 3 3 17 0 0 4 59.920 0 21039814 1 && \
+	tvservice -e DMT\ 88 && tvservice -e DMT\ 87 && sleep 0.5 && \
+	fbset -xres 256 -yres 240 -depth 32
+}
+ntsc_neogeo(){
+	vcgencmd hdmi_timings 1280 1 93 123 176 240 0 3 3 17 0 0 1 59.185 0 25977166 1 && \
+	tvservice -e DMT\ 88 && tvservice -e DMT\ 87 && sleep 0.5 && \
+	fbset -xres 1280 -yres 240 -depth 32
+}
+ntsc_nes(){
+	vcgencmd hdmi_timings 1024 1 74 98 141 240 0 3 3 17 0 0 4 60.100 0 21103018 1 && \
+	tvservice -e DMT\ 88 && tvservice -e DMT\ 87 && sleep 0.5 && \
+	fbset -xres 256 -yres 240 -depth 32
+}
+ntsc_snes(){
+	vcgencmd hdmi_timings 1024 1 74 98 141 240 0 3 3 17 0 0 2 60.100 0 21103018 1 && \
+	tvservice -e DMT\ 88 && tvservice -e DMT\ 87 && sleep 0.5 && \
+	fbset -xres 512 -yres 240 -depth 32
+}
+ntsc_pcengine(){
+	vcgencmd hdmi_timings 1024 1 74 98 141 240 0 3 3 17 0 0 4 59.940 0 21046837 1 && \
+	tvservice -e DMT\ 88 && tvservice -e DMT\ 87 && sleep 0.5 && \
+	fbset -xres 256 -yres 240 -depth 32
+}
+ntsc_arcade(){
+	vcgencmd hdmi_timings 1536 1 111 148 211 240 0 3 3 17 0 0 1 59.940 0 31570256 1 && \
+	tvservice -e DMT\ 88 && tvservice -e DMT\ 87 && sleep 0.5 && \
+	fbset -xres 1536 -yres 240 -depth 32
 }
 
 case "$systemName" in
 
 	"megadrive") # Load Sega Megadrive timings
-		megadrive;;
+		ntsc_megadrive;;
 	"genesis") # Load Sega Genesis timings
-		megadrive;;
+		ntsc_megadrive;;
 	"sega32x") # Load Sega 32X timings
-		megadrive;;
+		ntsc_megadrive;;
 	"segacd") # Load Sega CD timings
-		megadrive;;
+		ntsc_megadrive;;
 	"mastersystem") # Load Sega Master System timings
-		vcgencmd hdmi_timings 1920 1 48 192 240 240 1 3 3 16 0 0 0 59.92 0 37680000 1
-		tvservice -e "DMT 87"
-		fbset -depth 32 && fbset -depth 32 -xres 1920 -yres 240
-		;;
+		ntsc_tms9918;;
 	"gamegear") # Load Sega Game Gear timings
-		vcgencmd hdmi_timings 1920 1 48 192 280 288 1 3 10 6 0 0 0 59.92 0 38400000 1
-		tvservice -e "DMT 87"
-		fbset -depth 32 && fbset -depth 32 -xres 1920 -yres 288;;
+		ntsc_tms9918;;
 
 "atarilynx") # Load Atari Lynx timings
 vcgencmd hdmi_timings 1920 1 48 192 240 240 1 3 3 16 0 0 0 59.92 0 37680000 1
@@ -73,39 +94,21 @@ tvservice -e "DMT 87"
 fbset -depth 32 && fbset -depth 32 -xres 1920 -yres 240
 ;;
 	"neogeo") # Load SNK Neo Geo timings
-		vcgencmd hdmi_timings 1280 1 93 123 176 240 0 3 3 16 0 0 4 59.185 0 25977166 1
-		tvservice -e "DMT 87"
-		fbset -depth 32 && fbset -depth 32 -xres 320 -yres 224
-		;;
+		ntsc_neogeo;;
 
-"pcengine") # Load NEC PC Engine timings
-vcgencmd hdmi_timings 1920 1 152 250 280 240 1 3 3 16 0 0 0 59.94 0 40870000 1
-tvservice -e "DMT 87"
-fbset -depth 32 && fbset -depth 32 -xres 1920 -yres 240
-;;
+	"pcengine") # Load NEC PC Engine timings
+		ntsc_pcengine;;
 
-"supergrafx") # Load NEC PC Engine timings
-vcgencmd hdmi_timings 1920 1 152 250 280 240 1 3 3 16 0 0 0 59.94 0 40870000 1
-tvservice -e "DMT 87"
-fbset -depth 32 && fbset -depth 32 -xres 1920 -yres 240
-;;
-
-#"nes") # Load NES timings
-#	nes_snes;;
-
-"fds") # Load FDS timings
-vcgencmd hdmi_timings 1920 1 160 200 286 224 1 9 8 21 0 0 0 60.10 0 40410000 1
-tvservice -e "DMT 87"
-fbset -depth 32 && fbset -depth 32 -xres 1920 -yres 224
-;;
+	"supergrafx") # Load NEC PC Engine timings
+		ntsc_pcengine;;
+	"nes") # Load NES timings
+		ntsc_nes;;
+	"fds") # Load FDS timings
+		ntsc_nes;;
 	"snes") # Load SNES timings
-		nes_snes;;
-
-"msx") # Load MSX timings
-vcgencmd hdmi_timings 1920 1 152 250 280 240 1 3 3 16 0 0 0 59.94 0 40870000 1
-tvservice -e "DMT 87"
-fbset -depth 32 && fbset -depth 32 -xres 1920 -yres 240
-;;
+		ntsc_snes;;
+	"msx") # Load MSX timings
+		ntsc_tms9918;;
 
 "psx") # Load PSX timings
 vcgencmd hdmi_timings 1920 1 48 192 240 248 1 3 10 6 0 0 0 60 0 38400000 1
@@ -179,26 +182,16 @@ tvservice -e "DMT 87"
 fbset -depth 32 && fbset -depth 32 -xres 1920 -yres 224
 ;;
 
-"mame-libretro") # Load MAME Generic 320x240 timings
-vcgencmd hdmi_timings 1920 1 152 250 280 240 1 3 3 16 0 0 0 59.94 0 40870000 1
-tvservice -e "DMT 87"
-fbset -depth 32 && fbset -depth 32 -xres 1920 -yres 240
-;;
+	"mame-libretro") # Load MAME Generic 320x240 timings
+		ntsc_arcade;;
 
-"fba") # Load FBAlpha Generic 320x240 timings
-vcgencmd hdmi_timings 1920 1 152 250 280 240 1 3 3 16 0 0 0 59.94 0 40870000 1
-tvservice -e "DMT 87"
-fbset -depth 32 && fbset -depth 32 -xres 1920 -yres 240
-;;
+	"fba") # Load FBAlpha Generic 320x240 timings
+		ntsc_arcade;;
 
-"arcade") # Load Arcade Generic 320x240 timings
-if [ "$emuName" != "advmame" ]; then
-# Advmame No Res Change
-vcgencmd hdmi_timings 1920 1 152 250 280 240 1 3 3 16 0 0 0 59.94 0 40870000 1
-tvservice -e "DMT 87"
-fbset -depth 32 && fbset -depth 32 -xres 1920 -yres 240
-fi
-;;
+	"arcade") # Load Arcade Generic 320x240 timings
+		if [ "$emuName" != "advmame" ]; then
+			ntsc_arcade
+		fi;;
 
 "n64") # Load Nintendo 64 timings
 vcgencmd hdmi_timings=320 1 15 29 40 240 1 10 14 16 0 0 0 60 0 6400000 1

@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 if [[ "$(id -u)" -ne 0 ]]; then
     echo "Script must be run under sudo from the user you want to install for. Try 'sudo $0'"
     exit 1

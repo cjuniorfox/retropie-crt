@@ -26,7 +26,7 @@ for f in "${runcommand_scripts}"/* ; do
             for  p in ${parameters} ; do
                 file=$(echo"${file}" | grep "${p}")
             done;
-            cat "${runcommand_scripts}${platform}/retroarch_crt.cfg" # > "${filename}"
+            cat "${conffile}" > "${filename}"
             echo "${file}" >> "${filename}"
         fi
     fi

@@ -43,9 +43,10 @@ ntsc_megadrive(){
 	fbset -xres 1280 -yres 240 -depth 32
 }
 ntsc_mastersystem(){
-	vcgencmd hdmi_timings 1136 1 82 109 156 240 0 3 3 17 0 0 4 59.920 0 23341044 1 && \
-	tvservice -e DMT\ 88 && tvservice -e DMT\ 87 && sleep 0.5 && \
-	fbset -xres 284 -yres 240 -depth 32
+	vcgencmd hdmi_timings 1136 1 33 101 101 240 0 3 3 17 0 0 4 59.920 0 21567745 1 && \
+	tvservice -e DMT\ 88 && tvservice -e DMT\ 87 && \
+	sleep 0.5 && fbset -xres 284 -yres 240 -depth 32
+
 }
 ntsc_tms9918(){
 	vcgencmd hdmi_timings 1024 1 74 98 141 240 0 3 3 17 0 0 4 59.920 0 21039814 1 && \

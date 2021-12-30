@@ -43,7 +43,7 @@ ntsc_gamegear(){
 	vcgencmd hdmi_timings 1392 0 41 124 124 240 0 2 2 17 0 0 4 58.920 0 25900000 1 && tvservice -e DMT\ 88 && tvservice -e DMT\ 87 && sleep 0.5 && fbset -xres 348 -yres 240 -depth 32
 }
 ntsc_megadrive(){
-	vcgencmd hdmi_timings 1392 0 41 124 124 240 0 2 2 17 0 0 1 59.920 0 26400000 1 && tvservice -e DMT\ 88 && tvservice -e DMT\ 87 && sleep 0.5 && fbset -xres 1392 -yres 240 -depth 32
+	vcgencmd hdmi_timings 1044 0 31 93 93 240 0 2 2 17 0 0 3 59.920 0 19800000 1 && tvservice -e DMT\ 88 && tvservice -e DMT\ 87 && sleep 0.5 && fbset -xres 348 -yres 240 -depth 32
 }
 ntsc_mastersystem(){
 	vcgencmd hdmi_timings 1136 0 33 101 101 240 0 2 2 17 0 0 4 59.920 0 21500000 1 && tvservice -e DMT\ 88 && tvservice -e DMT\ 87 && sleep 0.5 && fbset -xres 284 -yres 240 -depth 32
@@ -80,7 +80,7 @@ case "$systemName" in
 	"mastersystem") # Load Sega Master System timings
 		ntsc_mastersystem;;
 	"gamegear") # Load Sega Game Gear timings
-		ntsc_gamegear;;
+		ntsc_mastersystem;;
 
 "atarilynx") # Load Atari Lynx timings
 vcgencmd hdmi_timings 1920 1 48 192 240 240 1 3 3 16 0 0 0 59.92 0 37680000 1

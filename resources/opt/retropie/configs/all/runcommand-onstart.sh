@@ -64,7 +64,7 @@ ntsc_pcengine(){
 	vcgencmd hdmi_timings 1024 0 72 98 138 224 0 10 10 17 0 0 4 59.940 0 20900000 1 && tvservice -e DMT\ 88 && tvservice -e DMT\ 87 && sleep 0.5 && fbset -xres 256 -yres 224 -depth 32
 }
 ntsc_arcade(){
-	vcgencmd hdmi_timings 1920 0 109 180 230 240 0 2 2 17 0 0 1 59.940 0 38300000 1 && tvservice -e DMT\ 88 && tvservice -e DMT\ 87 && sleep 0.5 && fbset -xres 1920 -yres 240 -depth 32
+	vcgencmd hdmi_timings 1920 0 57 175 225 240 0 2 2 17 0 0 1 59.940 0 37300000 1 && tvservice -e DMT\ 88 && tvservice -e DMT\ 87 && sleep 0.5 && fbset -xres 1920 -yres 240 -depth 32
 }
 
 case "$systemName" in

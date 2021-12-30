@@ -20,7 +20,7 @@ cp "${runcommand_scripts}"/all/runcommand-*.sh /opt/retropie/configs/all
 for f in "${runcommand_scripts}"/* ; do
     if [ -d "$f" ]; then
         platform="${f//${runcommand_scripts}/}"
-        conffile=${runcommand_scripts}${platform}/retroarch_crt.cfg
+        conffile=${runcommand_scripts}${platform}/retroarch_ntsc.cfg
         if [ -f "$conffile" ]; then
             parameters="$(awk '{ print $1 }' < "${conffile}")"
             filename="${retropie_configs}${platform}/retroarch.cfg";
@@ -36,7 +36,7 @@ done
 
 #Setup emulator specific file
 core_options="${retropie_configs}/all/retroarch-core-options.cfg"
-options_to_install="${runcommand_scripts}/all/retroarch-core-options.cfg"
+options_to_install="${runcommand_scripts}/all/retroarch-core-options_ntsc.cfg"
 if [ ! -f "${core_options}" ]; then
     touch "${core_options}";
 fi

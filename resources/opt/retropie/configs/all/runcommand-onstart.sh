@@ -43,7 +43,7 @@ ntsc_gamegear(){
 	vcgencmd hdmi_timings 1392 0 41 124 124 240 0 2 2 17 0 0 4 58.920 0 25900000 1 && tvservice -e DMT\ 88 && tvservice -e DMT\ 87 && sleep 0.5 && fbset -xres 348 -yres 240 -depth 32
 }
 ntsc_megadrive(){
-	vcgencmd hdmi_timings 1280 0 105 125 189 240 0 2 2 17 0 0 1 59.920 0 26700000 1 && tvservice -e DMT\ 88 && tvservice -e DMT\ 87 && sleep 0.5 && fbset -xres 1280 -yres 240 -depth 32
+	vcgencmd hdmi_timings 1920 0 82 175 200 240 0 2 2 17 0 0 1 59.920 0 37300000 1 && tvservice -e DMT\ 88 && tvservice -e DMT\ 87 && sleep 0.5 && fbset -xres 1920 -yres 240 -depth 32
 }
 ntsc_mastersystem(){
 	vcgencmd hdmi_timings 1136 0 33 101 101 240 0 2 2 17 0 0 4 59.920 0 21500000 1 && tvservice -e DMT\ 88 && tvservice -e DMT\ 87 && sleep 0.5 && fbset -xres 284 -yres 240 -depth 32

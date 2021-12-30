@@ -80,7 +80,7 @@ case "$systemName" in
 	"mastersystem") # Load Sega Master System timings
 		ntsc_mastersystem;;
 	"gamegear") # Load Sega Game Gear timings
-		ntsc_mastersystem;;
+		ntsc_gamegear;;
 
 "atarilynx") # Load Atari Lynx timings
 vcgencmd hdmi_timings 1920 1 48 192 240 240 1 3 3 16 0 0 0 59.92 0 37680000 1

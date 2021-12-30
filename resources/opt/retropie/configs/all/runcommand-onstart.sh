@@ -36,47 +36,33 @@
 systemName="$1"
 emuName="$2"
 
+pal_mastersystem(){
+	vcgencmd hdmi_timings 1136 1 35 101 120 288 0 2 2 19 0 0 4 50.000 0 21400000 1 && tvservice -e DMT\ 88 && tvservice -e DMT\ 87 && sleep 0.5 && fbset -xres 284 -yres 288 -depth 32
+}
 
 ntsc_megadrive(){
-	vcgencmd hdmi_timings 1280 1 93 123 176 240 0 3 3 17 0 0 1 59.920 0 26299768 1 && \
-	tvservice -e DMT\ 88 && tvservice -e DMT\ 87 && sleep 0.5 && \
-	fbset -xres 1280 -yres 240 -depth 32
+	vcgencmd hdmi_timings 1280 0 105 125 189 240 0 2 2 17 0 0 1 59.920 0 26700000 1 && tvservice -e DMT\ 88 && tvservice -e DMT\ 87 && sleep 0.5 && fbset -xres 1280 -yres 240 -depth 32
 }
 ntsc_mastersystem(){
-	vcgencmd hdmi_timings 1136 1 33 101 101 240 0 3 3 17 0 0 4 59.920 0 21567745 1 && \
-	tvservice -e DMT\ 88 && tvservice -e DMT\ 87 && \
-	sleep 0.5 && fbset -xres 284 -yres 240 -depth 32
-
+	vcgencmd hdmi_timings 1136 0 33 101 101 240 0 2 2 17 0 0 4 59.920 0 21500000 1 && tvservice -e DMT\ 88 && tvservice -e DMT\ 87 && sleep 0.5 && fbset -xres 284 -yres 240 -depth 32
 }
 ntsc_tms9918(){
-	vcgencmd hdmi_timings 1024 1 74 98 141 240 0 3 3 17 0 0 4 59.920 0 21039814 1 && \
-	tvservice -e DMT\ 88 && tvservice -e DMT\ 87 && sleep 0.5 && \
-	fbset -xres 256 -yres 240 -depth 32
+	vcgencmd hdmi_timings 1024 0 89 101 157 192 0 26 26 17 0 0 4 59.920 0 21500000 1 && tvservice -e DMT\ 88 && tvservice -e DMT\ 87 && sleep 0.5 && fbset -xres 256 -yres 192 -depth 32
 }
 ntsc_neogeo(){
-	vcgencmd hdmi_timings 1280 1 93 123 176 240 0 3 3 17 0 0 1 59.185 0 25977166 1 && \
-	tvservice -e DMT\ 88 && tvservice -e DMT\ 87 && sleep 0.5 && \
-	fbset -xres 1280 -yres 240 -depth 32
+	vcgencmd hdmi_timings 1280 0 105 125 189 224 0 10 10 17 0 0 4 59.185 0 26400000 1 && tvservice -e DMT\ 88 && tvservice -e DMT\ 87 && sleep 0.5 && fbset -xres 320 -yres 224 -depth 32
 }
 ntsc_nes(){
-	vcgencmd hdmi_timings 1024 1 74 98 141 240 0 3 3 17 0 0 4 60.100 0 21103018 1 && \
-	tvservice -e DMT\ 88 && tvservice -e DMT\ 87 && sleep 0.5 && \
-	fbset -xres 256 -yres 240 -depth 32
+	vcgencmd hdmi_timings 1024 0 72 98 138 240 0 2 2 17 0 0 4 60.100 0 21000000 1 && tvservice -e DMT\ 88 && tvservice -e DMT\ 87 && sleep 0.5 && fbset -xres 256 -yres 240 -depth 32
 }
 ntsc_snes(){
-	vcgencmd hdmi_timings 1024 1 74 98 141 240 0 3 3 17 0 0 2 60.100 0 21103018 1 && \
-	tvservice -e DMT\ 88 && tvservice -e DMT\ 87 && sleep 0.5 && \
-	fbset -xres 512 -yres 240 -depth 32
+	vcgencmd hdmi_timings 1024 0 72 98 138 240 0 2 2 17 0 0 2 60.100 0 21000000 1 && tvservice -e DMT\ 88 && tvservice -e DMT\ 87 && sleep 0.5 && fbset -xres 512 -yres 240 -depth 32
 }
 ntsc_pcengine(){
-	vcgencmd hdmi_timings 1024 1 74 98 141 240 0 3 3 17 0 0 4 59.940 0 21046837 1 && \
-	tvservice -e DMT\ 88 && tvservice -e DMT\ 87 && sleep 0.5 && \
-	fbset -xres 256 -yres 240 -depth 32
+	vcgencmd hdmi_timings 1024 0 72 98 138 224 0 10 10 17 0 0 4 59.940 0 20900000 1 && tvservice -e DMT\ 88 && tvservice -e DMT\ 87 && sleep 0.5 && fbset -xres 256 -yres 224 -depth 32
 }
 ntsc_arcade(){
-	vcgencmd hdmi_timings 1536 1 111 148 211 240 0 3 3 17 0 0 1 59.940 0 31570256 1 && \
-	tvservice -e DMT\ 88 && tvservice -e DMT\ 87 && sleep 0.5 && \
-	fbset -xres 1536 -yres 240 -depth 32
+	vcgencmd hdmi_timings 1536 0 96 145 193 240 0 2 2 17 0 0 1 59.940 0 30900000 1 && tvservice -e DMT\ 88 && tvservice -e DMT\ 87 && sleep 0.5 && fbset -xres 1536 -yres 240 -depth 32	
 }
 
 case "$systemName" in

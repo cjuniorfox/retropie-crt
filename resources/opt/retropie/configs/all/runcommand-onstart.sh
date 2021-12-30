@@ -39,7 +39,9 @@ emuName="$2"
 pal_mastersystem(){
 	vcgencmd hdmi_timings 1136 1 35 101 120 288 0 2 2 19 0 0 4 50.000 0 21400000 1 && tvservice -e DMT\ 88 && tvservice -e DMT\ 87 && sleep 0.5 && fbset -xres 284 -yres 288 -depth 32
 }
-
+ntsc_gamegear(){
+	vcgencmd hdmi_timings 1392 0 41 124 124 240 0 2 2 17 0 0 4 58.920 0 25900000 1 && tvservice -e DMT\ 88 && tvservice -e DMT\ 87 && sleep 0.5 && fbset -xres 348 -yres 240 -depth 32
+}
 ntsc_megadrive(){
 	vcgencmd hdmi_timings 1392 0 41 124 124 240 0 2 2 17 0 0 1 59.920 0 26400000 1 && tvservice -e DMT\ 88 && tvservice -e DMT\ 87 && sleep 0.5 && fbset -xres 1392 -yres 240 -depth 32
 }

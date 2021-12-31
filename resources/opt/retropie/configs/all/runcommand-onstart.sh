@@ -40,7 +40,9 @@ pal_mastersystem(){
 	vcgencmd hdmi_timings 1136 1 35 101 120 288 0 2 2 19 0 0 4 50.000 0 21400000 1 && tvservice -e DMT\ 88 && tvservice -e DMT\ 87 && sleep 0.5 && fbset -xres 284 -yres 288 -depth 32
 }
 
-
+ntsc_atarilynx(){
+	vcgencmd hdmi_timings 348 0 37 35 60 240 0 2 2 17 0 0 1 59.940 0 7600000 1 && tvservice -e DMT\ 88 && tvservice -e DMT\ 87 && sleep 0.5 && fbset -xres 348 -yres 240 -depth 32
+}
 
 ntsc_megadrive(){
 	vcgencmd hdmi_timings 1392 0 41 124 124 240 0 2 2 17 0 0 1 59.920 0 26400000 1 && tvservice -e DMT\ 88 && tvservice -e DMT\ 87 && sleep 0.5 && fbset -xres 1392 -yres 240 -depth 32
@@ -82,17 +84,13 @@ case "$systemName" in
 	"gamegear") # Load Sega Game Gear timings
 		ntsc_mastersystem;;
 
-"atarilynx") # Load Atari Lynx timings
-vcgencmd hdmi_timings 1920 1 48 192 240 240 1 3 3 16 0 0 0 59.92 0 37680000 1
-tvservice -e "DMT 87"
-fbset -depth 32 && fbset -depth 32 -xres 1920 -yres 240
-;;
+	"atarilynx") # Load Atari Lynx timings
+		ntsc_atarilynx;;
 	"neogeo") # Load SNK Neo Geo timings
 		ntsc_neogeo;;
 
 	"pcengine") # Load NEC PC Engine timings
 		ntsc_pcengine;;
-
 	"supergrafx") # Load NEC PC Engine timings
 		ntsc_pcengine;;
 	"nes") # Load NES timings

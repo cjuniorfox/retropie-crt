@@ -41,7 +41,7 @@ pal_mastersystem(){
 }
 
 ntsc_atarilynx(){
-	vcgencmd hdmi_timings 348 0 37 35 60 240 0 2 2 17 0 0 1 59.940 0 7600000 1 && tvservice -e DMT\ 88 && tvservice -e DMT\ 87 && sleep 0.5 && fbset -xres 348 -yres 240 -depth 32
+	vcgencmd hdmi_timings 1392 0 41 124 124 240 0 2 2 17 0 0 4 59.940 0 26400000 1 && tvservice -e DMT\ 88 && tvservice -e DMT\ 87 && sleep 0.5 && fbset -xres 348 -yres 240 -depth 32
 }
 
 ntsc_megadrive(){

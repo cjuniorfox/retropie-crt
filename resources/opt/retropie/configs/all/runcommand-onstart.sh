@@ -115,11 +115,8 @@ fbset -depth 32 && fbset -depth 32 -xres 1920 -yres 240
 		ntsc_gameboy;;
 	"gbc") # Load Game Boy Color timings
 		ntsc_gameboy;;
-"gba") # Load Game Boy Advance timings
-vcgencmd hdmi_timings 1920 1 48 192 300 320 1 3 10 6 0 0 0 59.73 0 38400000 1
-tvservice -e "DMT 87"
-fbset -depth 32 && fbset -depth 32 -xres 1920 -yres 320
-;;
+	"gba") # Load Game Boy Advance timings
+		ntsc_gameboy;;
 
 "ngp") # Load SNK Neo Geo Pocket timings
 vcgencmd hdmi_timings 1920 1 160 200 228 228 1 9 8 21 0 0 0 60 0 40410000 1

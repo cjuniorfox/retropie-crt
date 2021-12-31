@@ -69,6 +69,10 @@ ntsc_arcade(){
 	vcgencmd hdmi_timings 1920 0 82 176 201 240 0 3 2 17 0 0 1 59.940 0 37376826 1 && tvservice -e DMT\ 88 && tvservice -e DMT\ 87 && sleep 0.5 && fbset -xres 1920 -yres 240 -depth 32
 }
 
+ntsc_gameboy(){
+	vcgencmd hdmi_timings 1280 0 38 115 115 240 0 3 2 17 0 0 4 59.730 0 24208251 1 && tvservice -e DMT\ 88 && tvservice -e DMT\ 87 && sleep 0.5 && fbset -xres 320 -yres 240 -depth 32
+}
+
 case "$systemName" in
 
 	"megadrive") # Load Sega Megadrive timings
@@ -83,7 +87,6 @@ case "$systemName" in
 		ntsc_mastersystem;;
 	"gamegear") # Load Sega Game Gear timings
 		ntsc_mastersystem;;
-
 	"atarilynx") # Load Atari Lynx timings
 		ntsc_atarilynx;;
 	"neogeo") # Load SNK Neo Geo timings
@@ -108,18 +111,10 @@ tvservice -e "DMT 87"
 fbset -depth 32 && fbset -depth 32 -xres 1920 -yres 240
 ;;
 
-"gb") # Load Game Boy timings
-vcgencmd hdmi_timings 1920 1 48 192 280 288 1 3 10 6 0 0 0 59.73 0 38400000 1
-tvservice -e "DMT 87"
-fbset -depth 32 && fbset -depth 32 -xres 1920 -yres 288
-;;
-
-"gbc") # Load Game Boy Color timings
-vcgencmd hdmi_timings 1920 1 48 192 280 288 1 3 10 6 0 0 0 59.73 0 38400000 1
-tvservice -e "DMT 87"
-fbset -depth 32 && fbset -depth 32 -xres 1920 -yres 288
-;;
-
+	"gb") # Load Game Boy timings
+		ntsc_gameboy;;
+	"gbc") # Load Game Boy Color timings
+		ntsc_gameboy;;
 "gba") # Load Game Boy Advance timings
 vcgencmd hdmi_timings 1920 1 48 192 300 320 1 3 10 6 0 0 0 59.73 0 38400000 1
 tvservice -e "DMT 87"

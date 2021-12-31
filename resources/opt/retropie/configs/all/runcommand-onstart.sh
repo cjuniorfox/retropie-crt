@@ -73,6 +73,10 @@ ntsc_gameboy(){
 	vcgencmd hdmi_timings 1280 0 38 115 115 240 0 3 2 17 0 0 4 59.730 0 24208251 1 && tvservice -e DMT\ 88 && tvservice -e DMT\ 87 && sleep 0.5 && fbset -xres 320 -yres 240 -depth 32
 }
 
+ntsc_atari2600(){
+	vcgencmd hdmi_timings 1392 0 41 125 125 250 0 -2 -3 17 0 0 4 59.920 0 26410020 1 && tvservice -e DMT\ 88 && tvservice -e DMT\ 87 && sleep 0.5 && fbset -xres 348 -yres 250 -depth 32
+}
+
 case "$systemName" in
 
 	"megadrive") # Load Sega Megadrive timings
@@ -91,7 +95,6 @@ case "$systemName" in
 		ntsc_atarilynx;;
 	"neogeo") # Load SNK Neo Geo timings
 		ntsc_neogeo;;
-
 	"pcengine") # Load NEC PC Engine timings
 		ntsc_pcengine;;
 	"supergrafx") # Load NEC PC Engine timings
@@ -130,11 +133,8 @@ tvservice -e "DMT 87"
 fbset -depth 32 && fbset -depth 32 -xres 1920 -yres 228
 ;;
 
-"atari2600") # Load Atari 2600 timings
-vcgencmd hdmi_timings 1920 1 48 192 200 248 1 3 10 6 0 0 0 59.92 0 38400000 1
-tvservice -e "DMT 87"
-fbset -depth 32 && fbset -depth 32 -xres 1920 -yres 200
-;;
+	"atari2600") # Load Atari 2600 timings
+		ntsc_atari2600;;
 
 "atari5200") # Load Atari 5200 timings
 vcgencmd hdmi_timings 1920 1 48 192 240 248 1 3 10 6 0 0 0 59.92 0 38400000 1

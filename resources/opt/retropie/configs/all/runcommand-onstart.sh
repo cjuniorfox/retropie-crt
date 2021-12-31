@@ -74,7 +74,7 @@ ntsc_gameboy(){
 }
 
 ntsc_atari2600(){
-	vcgencmd hdmi_timings 1392 0 41 125 125 250 0 -2 -3 17 0 0 4 59.920 0 26410020 1 && tvservice -e DMT\ 88 && tvservice -e DMT\ 87 && sleep 0.5 && fbset -xres 348 -yres 250 -depth 32
+	vcgencmd hdmi_timings 1392 0 41 125 125 250 0 3 2 7 0 0 4 59.920 0 26410020 1 && tvservice -e DMT\ 88 && tvservice -e DMT\ 87 && sleep 0.5 && fbset -xres 348 -yres 250 -depth 32
 }
 
 case "$systemName" in

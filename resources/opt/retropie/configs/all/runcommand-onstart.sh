@@ -76,6 +76,9 @@ ntsc_gameboy(){
 ntsc_atari2600(){
 	vcgencmd hdmi_timings 1392 0 41 125 125 250 0 1 2 9 0 0 4 59.920 0 26410020 1 && tvservice -e DMT\ 88 && tvservice -e DMT\ 87 && sleep 0.5 && fbset -xres 348 -yres 250 -depth 32
 }
+ntsc_atari5200(){
+	vcgencmd hdmi_timings 1408 0 41 126 126 250 0 1 2 9 0 0 4 59.920 0 26709061 1 && tvservice -e DMT\ 88 && tvservice -e DMT\ 87 && sleep 0.5 && fbset -xres 352 -yres 250 -depth 32
+}
 
 case "$systemName" in
 
@@ -136,11 +139,8 @@ fbset -depth 32 && fbset -depth 32 -xres 1920 -yres 228
 	"atari2600") # Load Atari 2600 timings
 		ntsc_atari2600;;
 
-"atari5200") # Load Atari 5200 timings
-vcgencmd hdmi_timings 1920 1 48 192 240 248 1 3 10 6 0 0 0 59.92 0 38400000 1
-tvservice -e "DMT 87"
-fbset -depth 32 && fbset -depth 32 -xres 1920 -yres 240
-;;
+	"atari5200") # Load Atari 5200 timings
+		ntsc_atari5200;;
 
 "atari7800") # Load Atari 7800 timings
 vcgencmd hdmi_timings 1920 1 48 192 240 248 1 3 10 6 0 0 0 59.92 0 38400000 1

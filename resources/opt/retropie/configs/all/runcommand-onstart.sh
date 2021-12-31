@@ -60,7 +60,7 @@ ntsc_nes(){
 	vcgencmd hdmi_timings 1024 0 72 98 138 240 0 2 2 17 0 0 4 60.100 0 21000000 1 && tvservice -e DMT\ 88 && tvservice -e DMT\ 87 && sleep 0.5 && fbset -xres 256 -yres 240 -depth 32
 }
 ntsc_snes(){
-	vcgencmd hdmi_timings 1084 0 32 96 96 240 0 2 2 17 0 0 2 60.100 0 21000000 1 && tvservice -e DMT\ 88 && tvservice -e DMT\ 87 && sleep 0.5 && fbset -xres 542 -yres 240 -depth 32
+	vcgencmd hdmi_timings 1084 0 32 97 97 240 0 3 2 17 0 0 2 60.100 0 20633700 1 && tvservice -e DMT\ 88 && tvservice -e DMT\ 87 && sleep 0.5 && fbset -xres 542 -yres 240 -depth 32
 }
 ntsc_pcengine(){
 	vcgencmd hdmi_timings 1024 0 72 98 138 224 0 10 10 17 0 0 4 59.940 0 20900000 1 && tvservice -e DMT\ 88 && tvservice -e DMT\ 87 && sleep 0.5 && fbset -xres 256 -yres 224 -depth 32

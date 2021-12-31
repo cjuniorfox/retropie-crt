@@ -54,7 +54,7 @@ ntsc_tms9918(){
 	vcgencmd hdmi_timings 1024 0 89 102 158 192 0 27 26 17 0 0 4 59.920 0 21546673 1 && tvservice -e DMT\ 88 && tvservice -e DMT\ 87 && sleep 0.5 && fbset -xres 256 -yres 192 -depth 32
 }
 ntsc_neogeo(){
-	vcgencmd hdmi_timings 1044 0 31 94 94 240 0 3 2 17 0 0 3 59.185 0 19556776 1 && tvservice -e DMT\ 88 && tvservice -e DMT\ 87 && sleep 0.5 && fbset -xres 348 -yres 240 -depth 32
+	vcgencmd hdmi_timings 1392 0 41 125 125 240 0 3 2 17 0 0 4 59.185 0 26086065 1 && tvservice -e DMT\ 88 && tvservice -e DMT\ 87 && sleep 0.5 && fbset -xres 348 -yres 240 -depth 32
 }
 ntsc_nes(){
 	vcgencmd hdmi_timings 1024 0 72 99 139 240 0 3 2 17 0 0 4 60.100 0 21011521 1 && tvservice -e DMT\ 88 && tvservice -e DMT\ 87 && sleep 0.5 && fbset -xres 256 -yres 240 -depth 32

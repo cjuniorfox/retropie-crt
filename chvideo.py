@@ -1,4 +1,4 @@
-#!/bin/python
+#!/usr/bin/python
 import math, argparse, subprocess, time
 
 class VerticalTiming:

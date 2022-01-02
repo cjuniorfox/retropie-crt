@@ -89,7 +89,7 @@ ntsc_nintendo64(){
 	vcgencmd hdmi_timings 1392 0 41 125 125 240 0 3 2 17 0 0 2 60.000 0 26445280 1 && tvservice -e DMT\ 88 && tvservice -e DMT\ 87 && sleep 0.5 && fbset -xres 696 -yres 240 -depth 32
 }
 ntsc_x68000(){
-	vcgencmd hdmi_timings 1084 0 32 97 97 480 0 3 3 17 0 0 2 59.940 1 20616893 1 && tvservice -e DMT\ 88 && tvservice -e DMT\ 87 && sleep 0.5 && fbset -xres 542 -yres 480 -depth 32
+	vcgencmd hdmi_timings 1084 0 32 97 97 256 0 1 2 3 0 0 2 59.940 0 20577722 1 && tvservice -e DMT\ 88 && tvservice -e DMT\ 87 && sleep 0.5 && fbset -xres 542 -yres 256 -depth 32
 }
 
 case "$systemName" in

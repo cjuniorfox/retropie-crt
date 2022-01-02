@@ -117,4 +117,5 @@ args = parser.parse_args()
 refresh = float(args.refresh)
 if refresh == 0:
     refresh = 59.97 if not args.pal else 50
-image(args.width, refresh, args.pal, not args.progressive,args.overscan_left, args.overscan_right, args.overscan_top, args.overscan_bottom)
+image(args.width, 
+    refresh, args.pal, not args.progressive,args.overscan_left, args.overscan_right, args.overscan_top, args.overscan_bottom)

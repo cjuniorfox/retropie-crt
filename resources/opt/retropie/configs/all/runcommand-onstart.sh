@@ -88,6 +88,9 @@ ntsc_neogeopocket(){
 ntsc_nintendo64(){
 	vcgencmd hdmi_timings 1392 0 41 125 125 240 0 3 2 17 0 0 2 60.000 0 26445280 1 && tvservice -e DMT\ 88 && tvservice -e DMT\ 87 && sleep 0.5 && fbset -xres 696 -yres 240 -depth 32
 }
+ntsc_x68000(){
+	vcgencmd hdmi_timings 1280 0 38 115 115 480 0 3 3 17 0 0 2 59.940 1 24339607 1 && tvservice -e DMT\ 88 && tvservice -e DMT\ 87 && sleep 0.5 && fbset -xres 640 -yres 480 -depth 32
+}
 
 case "$systemName" in
 
@@ -120,7 +123,7 @@ case "$systemName" in
 	"msx") # Load MSX timings
 		ntsc_tms9918;;
 	"x68000") # Load MSX timings
-		ntsc_snes;;
+		ntsc_x68000;;
 
 "psx") # Load PSX timings
 vcgencmd hdmi_timings 1920 1 48 192 240 248 1 3 10 6 0 0 0 60 0 38400000 1

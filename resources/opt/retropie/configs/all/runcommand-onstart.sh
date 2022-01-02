@@ -135,7 +135,6 @@ fbset -depth 32 && fbset -depth 32 -xres 1920 -yres 240
 
 	"ngp") # Load SNK Neo Geo Pocket timings
 		ntsc_neogeopocket;;
-	;;
 	"ngpc") # Load SNK Neo Geo Pocket Color timings
 		ntsc_neogeopocket;;
 

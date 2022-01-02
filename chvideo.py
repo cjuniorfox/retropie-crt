@@ -1,7 +1,9 @@
 #!/bin/python
+import math, argparse
+
 class VerticalTiming:
     def __init__(self,verticalLines,beam):
-        self.scan = beam / verticalLines.freq;
+        self.scan = beam / verticalLines.freq
         self.image = (self.scan * verticalLines.image)/verticalLines.scan
         self.frontPorch = (self.scan * verticalLines.frontPorch) / verticalLines.scan
         self.sync = (self.scan * verticalLines.sync) / verticalLines.scan
@@ -9,12 +11,12 @@ class VerticalTiming:
         self.totalBlank = self.frontPorch + self.sync + self.backPorch
 
 class VerticalLines:
-    def __init__(self, scan, image, frontPorch, sync, freq):
+    def __init__(self, scan, image, frontPorch, sync, freq, overscan):
         self.scan = scan
-        self.image = image
-        self.frontPorch = frontPorch
-        self.sync = sync
-        self.backPorch = self.scan - self.image- self.frontPorch - self.sync
+        self.image = image - overscan.top - overscan.bottom
+        self.frontPorch = int(frontPorch + overscan.bottom)
+        self.sync = int(sync)
+        self.backPorch = int(math.ceil(self.scan - self.image - self.frontPorch - self.sync - overscan.bottom + overscan.top))
         self.totalBlank = self.backPorch + self.frontPorch + self.sync
         self.freq = freq
         self.lineFrequency = self.freq * self.scan
@@ -27,14 +29,16 @@ class Overscan:
         self.bottom = bottom
 
 class HorizontalPixels:
-    def __init__(self,pixels,hTimming):
+    def __init__(self,pixels,hTimming,overscan):
         pixelRep = 1280
-        self.rep = int(round(pixelRep/pixels,0))
+        self.rep = int(math.ceil(pixelRep/pixels))
+        oLeft = overscan.left * self.rep #Overscan left to the back porch
+        oRight = overscan.right * self.rep #Overscan right to the front porch
         self.image = pixels * self.rep
-        self.scan = int(round(self.image * (hTimming.scan/ hTimming.image),0))
-        self.frontPorch = int(round(self.scan * (hTimming.frontPorch / hTimming.scan),0))
-        self.backPorch = int(round(self.scan * (hTimming.backPorch / hTimming.scan),0))
-        self.sync = int(round(self.scan * (hTimming.sync / hTimming.scan),0))
+        self.scan = (self.image + oLeft + oRight) * (hTimming.scan/ (hTimming.image))
+        self.frontPorch = self.scan * (hTimming.frontPorch / hTimming.scan)+oRight
+        self.backPorch = self.scan * (hTimming.backPorch / hTimming.scan)+oLeft
+        self.sync = self.scan * (hTimming.sync / hTimming.scan)
         self.totalBlank = self.frontPorch + self.backPorch + self.sync
 
 
@@ -48,35 +52,27 @@ class HorizontalTimming:
         self.image = self.scan - self.totalBlank
 
 class Scan :
-    def __init__(self,hPixels, tvSystem, freq, interlaced, overscan):
-        if tvSystem not in "PAL NTSC" :
-            print("The tv system need to be either PAL or NTSC")
-            exit(1)
+    def __init__(self,hPixels, pal, freq, interlaced, overscan):
         beam = 1000;
-        lineFactor = (2 if interlaced else 1);
+        lineFactor = (2 if interlaced else 1)
+        self.interlaced = int(interlaced)
         #NTSC
-        self.vLines = VerticalLines(262.5, 240, 3, 3, freq)
+        self.vLines = VerticalLines(262.5, 240, 3, 3, freq,overscan)
         self.hTimming = HorizontalTimming(self.vLines,0.024,0.074,0.074,beam)
-        if tvSystem == "PAL" :
-            self.vLines = VerticalLines(312.5, 288, 3, 3, freq)
+        if pal :
+            self.vLines = VerticalLines(312.5, 288, 3, 3, freq,overscan)
             self.hTimming = HorizontalTimming(self.vLines,0.025,0.074,0.088,beam)
         self.vTimming = VerticalTiming(self.vLines,beam)
-        self.hPixels = HorizontalPixels(hPixels,self.hTimming)
+        self.hPixels = HorizontalPixels(hPixels,self.hTimming,overscan)
         self.vertPixels = self.vLines.image * lineFactor
-        self.pixelClock = int(round(self.vLines.scan * self.hPixels.scan * freq,0))
+        self.pixelClock = int(round(self.vLines.scan * self.hPixels.scan * freq))
         
 
-def ntsc(hPixels,interlaced,overscan) :
-    NTSC = Scan(hPixels,"NTSC",59.94,interlaced, overscan)
-    return NTSC
 
-def pal(hPixels,interlaced,overscan) :
-    PAL = Scan(hPixels,"PAL",50,interlaced, overscan)
-    return PAL
-
-def image(freq):
-    o = Overscan(32,32,16,16);
-    system = ntsc(720,True,o);
+def image(width,refresh,pal,interlaced,oLeft,oRight,oTop,oBottom):
+    o = Overscan(oLeft,oRight,oTop,oBottom);
+    print (width,refresh,pal,interlaced,oLeft,oRight,oTop,oBottom);
+    system = Scan(width, pal, interlaced, refresh, o)
     print("Vertical:")
     print(" Lines      :", system.vLines.scan,system.vTimming.scan,"(nS)")
     print(" Image      :", system.vertPixels, system.vTimming.image, "(nS)")
@@ -92,4 +88,33 @@ def image(freq):
     print(" Back Porch :", system.hPixels.backPorch, system.hTimming.backPorch, "(us)")
     print(" Total blank:", system.hPixels.totalBlank, system.hTimming.totalBlank, "(uS)")
     print("Pixel Clock: ", system.pixelClock);
-image(50)
+
+    strTimmings = str(system.hPixels.image) + " 1 " + \
+        str(round(system.hPixels.frontPorch)) + " " + \
+        str(round(system.hPixels.sync)) + " " + \
+        str(round(system.hPixels.backPorch)) + " " + \
+        str(system.vertPixels) + " 1 " + \
+        str(system.vLines.frontPorch) + " " +\
+        str(system.vLines.sync) + " " + \
+        str(system.vLines.backPorch) + " 0 0 " + \
+        str(system.hPixels.rep) + " " + \
+        str(system.vLines.freq) + " " + \
+        str(system.interlaced) + " " + \
+        str(system.pixelClock) + " 1"
+    
+    print ("\n hdmi_timings =",strTimmings)
+
+parser = argparse.ArgumentParser(description="Switch the HDMI output resolution for SDTV friendly modes")
+parser.add_argument("--width","-w", metavar = '720',type=int, help = "Width resolution value",default=720)
+parser.add_argument("--refresh","-r", metavar= '59.97',type=float, help = "Refresh rate",default=0)
+parser.add_argument("--progressive","-p",action=argparse.BooleanOptionalAction, help="Progressive 240p/288p",default=False)
+parser.add_argument("--pal","-P",action=argparse.BooleanOptionalAction, help="PAL format", default=False)
+parser.add_argument("--overscan-left","-L",metavar="0",type=int,help="Overscan left",default=0)
+parser.add_argument("--overscan-right","-R",metavar="0",type=int,help="Overscan right",default=0)
+parser.add_argument("--overscan-top","-T",metavar="0",type=int,help="Overscan top",default=0)
+parser.add_argument("--overscan-bottom","-B",metavar="0",type=int,help="Overscan bottom",default=0)
+args = parser.parse_args()
+refresh = float(args.refresh)
+if refresh == 0:
+    refresh = 59.97 if not args.pal else 50
+image(args.width, refresh, args.pal, not args.progressive,args.overscan_left, args.overscan_right, args.overscan_top, args.overscan_bottom)

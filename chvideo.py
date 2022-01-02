@@ -117,7 +117,7 @@ def apply(hdmi_timings):
     exec=subprocess.Popen(["tvservice","-e","DMT 87"])
     exec.wait()
     time.sleep(1)
-    exec.subprocess.Open(["tvservice","-e","DMT 88"])
+    exec=subprocess.Popen(["tvservice","-e","DMT 88"])
 
 parser = argparse.ArgumentParser(description="Switch the HDMI output resolution for SDTV friendly modes")
 parser.add_argument("--width","-w", metavar = '720',type=int, help = "Width resolution value",default=720)

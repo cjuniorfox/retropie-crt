@@ -52,7 +52,7 @@ class HorizontalTimming:
         self.image = self.scan - self.totalBlank
 
 class Scan :
-    def __init__(self,hPixels, pal, freq, interlaced, overscan):
+    def __init__(self,hPixels, pal, interlaced, freq, overscan):
         beam = 1000;
         lineFactor = (2 if interlaced else 1)
         self.interlaced = int(interlaced)
@@ -69,10 +69,9 @@ class Scan :
         
 
 
-def image(width,refresh,pal,interlaced,oLeft,oRight,oTop,oBottom):
+def image(width,pal,interlaced,freq,oLeft,oRight,oTop,oBottom):
     o = Overscan(oLeft,oRight,oTop,oBottom);
-    print (width,refresh,pal,interlaced,oLeft,oRight,oTop,oBottom);
-    system = Scan(width, pal, interlaced, refresh, o)
+    system = Scan(width, pal, interlaced, freq, o)
     print("Vertical:")
     print(" Lines      :", system.vLines.scan,system.vTimming.scan,"(nS)")
     print(" Image      :", system.vertPixels, system.vTimming.image, "(nS)")
@@ -87,6 +86,7 @@ def image(width,refresh,pal,interlaced,oLeft,oRight,oTop,oBottom):
     print(" Front Porch:", system.hPixels.frontPorch, system.hTimming.frontPorch, "(uS)")
     print(" Back Porch :", system.hPixels.backPorch, system.hTimming.backPorch, "(us)")
     print(" Total blank:", system.hPixels.totalBlank, system.hTimming.totalBlank, "(uS)")
+    print(" Frequency  :", system.vLines.freq, "Hz")
     print("Pixel Clock: ", system.pixelClock);
 
     strTimmings = str(system.hPixels.image) + " 1 " + \
@@ -99,14 +99,14 @@ def image(width,refresh,pal,interlaced,oLeft,oRight,oTop,oBottom):
         str(system.vLines.backPorch) + " 0 0 " + \
         str(system.hPixels.rep) + " " + \
         str(system.vLines.freq) + " " + \
-        str(system.interlaced) + " " + \
+        str(1 if system.interlaced else 0) + " " + \
         str(system.pixelClock) + " 1"
     
     print ("\n hdmi_timings =",strTimmings)
 
 parser = argparse.ArgumentParser(description="Switch the HDMI output resolution for SDTV friendly modes")
 parser.add_argument("--width","-w", metavar = '720',type=int, help = "Width resolution value",default=720)
-parser.add_argument("--refresh","-r", metavar= '59.97',type=float, help = "Refresh rate",default=0)
+parser.add_argument("--frequency","-f", metavar= '59.97',type=float, help = "Refresh rate",default=0)
 parser.add_argument("--progressive","-p",action=argparse.BooleanOptionalAction, help="Progressive 240p/288p",default=False)
 parser.add_argument("--pal","-P",action=argparse.BooleanOptionalAction, help="PAL format", default=False)
 parser.add_argument("--overscan-left","-L",metavar="0",type=int,help="Overscan left",default=0)
@@ -114,8 +114,16 @@ parser.add_argument("--overscan-right","-R",metavar="0",type=int,help="Overscan 
 parser.add_argument("--overscan-top","-T",metavar="0",type=int,help="Overscan top",default=0)
 parser.add_argument("--overscan-bottom","-B",metavar="0",type=int,help="Overscan bottom",default=0)
 args = parser.parse_args()
-refresh = float(args.refresh)
-if refresh == 0:
-    refresh = 59.97 if not args.pal else 50
+freq = float(args.frequency)
+if freq == 0:
+    freq = 59.97 if not args.pal else 50
+
 image(args.width, 
-    refresh, args.pal, not args.progressive,args.overscan_left, args.overscan_right, args.overscan_top, args.overscan_bottom)
+    args.pal, 
+    not args.progressive,
+    freq,
+    args.overscan_left, 
+    args.overscan_right, 
+    args.overscan_top, 
+    args.overscan_bottom
+)

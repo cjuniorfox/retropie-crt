@@ -157,6 +157,7 @@ fbset -depth 32 && fbset -depth 32 -xres 1920 -yres 240
 			ntsc_arcade
 		fi;;
 	"n64") # Load Nintendo 64 timings
+	#Warning: To works correctly, Its needed to install lr-mupen64
 		ntsc_nintendo64;;
 
 "doom") # Generic 320x240 timings

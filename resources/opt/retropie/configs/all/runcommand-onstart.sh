@@ -85,6 +85,9 @@ ntsc_atari7800(){
 ntsc_neogeopocket(){
 	vcgencmd hdmi_timings 1280 0 38 115 115 240 0 3 2 17 0 0 5 60.000 0 24317680 1 && tvservice -e DMT\ 88 && tvservice -e DMT\ 87 && sleep 0.5 && fbset -xres 256 -yres 240 -depth 32
 }
+ntsc_nintendo64{
+	vcgencmd hdmi_timings 1392 0 41 125 125 240 0 3 2 17 0 0 2 60.000 0 26445280 1 && tvservice -e DMT\ 88 && tvservice -e DMT\ 87 && sleep 0.5 && fbset -xres 696 -yres 240 -depth 32
+}
 
 case "$systemName" in
 
@@ -154,12 +157,8 @@ fbset -depth 32 && fbset -depth 32 -xres 1920 -yres 240
 		if [ "$emuName" != "advmame" ]; then
 			ntsc_arcade
 		fi;;
-
-"n64") # Load Nintendo 64 timings
-vcgencmd hdmi_timings=320 1 15 29 40 240 1 10 14 16 0 0 0 60 0 6400000 1
-tvservice -e "DMT 87"
-fbset -depth 32 && fbset -depth 32 -xres 320 -yres 240
-;;
+	"n64") # Load Nintendo 64 timings
+		ntsc_nintendo64;;
 
 "doom") # Generic 320x240 timings
 vcgencmd hdmi_timings 1920 1 48 192 240 248 1 3 10 6 0 0 0 60 0 38400000 1

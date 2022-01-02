@@ -119,6 +119,8 @@ case "$systemName" in
 		ntsc_snes;;
 	"msx") # Load MSX timings
 		ntsc_tms9918;;
+	"x68000") # Load MSX timings
+		ntsc_nes;;
 
 "psx") # Load PSX timings
 vcgencmd hdmi_timings 1920 1 48 192 240 248 1 3 10 6 0 0 0 60 0 38400000 1

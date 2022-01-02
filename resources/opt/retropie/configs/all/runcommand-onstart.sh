@@ -83,9 +83,9 @@ ntsc_atari7800(){
 	vcgencmd hdmi_timings 1392 0 41 125 125 240 0 3 2 17 0 0 4 59.920 0 26410020 1 && tvservice -e DMT\ 88 && tvservice -e DMT\ 87 && sleep 0.5 && fbset -xres 348 -yres 240 -depth 32
 }
 ntsc_neogeopocket(){
-	vcgencmd hdmi_timings 1280 0 38 115 115 240 0 3 2 17 0 0 5 60.000 0 24317680 1 && tvservice -e DMT\ 88 && tvservice -e DMT\ 87 && sleep 0.5 && fbset -xres 256 -yres 240 -depth 32
+	vcgencmd hdmi_timings 1024 0 30 92 92 240 0 3 2 17 0 0 4 60.000 0 19447840 1 && tvservice -e DMT\ 88 && tvservice -e DMT\ 87 && sleep 0.5 && fbset -xres 256 -yres 240 -depth 32
 }
-ntsc_nintendo64{
+ntsc_nintendo64(){
 	vcgencmd hdmi_timings 1392 0 41 125 125 240 0 3 2 17 0 0 2 60.000 0 26445280 1 && tvservice -e DMT\ 88 && tvservice -e DMT\ 87 && sleep 0.5 && fbset -xres 696 -yres 240 -depth 32
 }
 
@@ -134,7 +134,7 @@ fbset -depth 32 && fbset -depth 32 -xres 1920 -yres 240
 		ntsc_gameboy;;
 
 	"ngp") # Load SNK Neo Geo Pocket timings
-		vcgencmd hdmi_timings 1392 0 41 125 125 240 0 3 2 17 0 0 4 60.000 0 26445280 1 && tvservice -e DMT\ 88 && tvservice -e DMT\ 87 && sleep 0.5 && fbset -xres 348 -yres 240 -depth 32
+		ntsc_neogeopocket;;
 	;;
 	"ngpc") # Load SNK Neo Geo Pocket Color timings
 		ntsc_neogeopocket;;

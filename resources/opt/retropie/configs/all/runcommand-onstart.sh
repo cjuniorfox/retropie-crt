@@ -82,6 +82,9 @@ ntsc_atari5200(){
 ntsc_atari7800(){
 	vcgencmd hdmi_timings 1392 0 41 125 125 240 0 3 2 17 0 0 4 59.920 0 26410020 1 && tvservice -e DMT\ 88 && tvservice -e DMT\ 87 && sleep 0.5 && fbset -xres 348 -yres 240 -depth 32
 }
+ntsc_neogeopocket(){
+	vcgencmd hdmi_timings 1392 0 41 125 125 240 0 3 2 17 0 0 4 60.000 0 26445280 1 && tvservice -e DMT\ 88 && tvservice -e DMT\ 87 && sleep 0.5 && fbset -xres 348 -yres 240 -depth 32
+}
 
 case "$systemName" in
 
@@ -127,17 +130,11 @@ fbset -depth 32 && fbset -depth 32 -xres 1920 -yres 240
 	"gba") # Load Game Boy Advance timings
 		ntsc_gameboy;;
 
-"ngp") # Load SNK Neo Geo Pocket timings
-vcgencmd hdmi_timings 1920 1 160 200 228 228 1 9 8 21 0 0 0 60 0 40410000 1
-tvservice -e "DMT 87"
-fbset -depth 32 && fbset -depth 32 -xres 1920 -yres 228
-;;
-
-"ngpc") # Load SNK Neo Geo Pocket Color timings
-vcgencmd hdmi_timings 1920 1 160 200 228 228 1 9 8 21 0 0 0 60 0 40410000 1
-tvservice -e "DMT 87"
-fbset -depth 32 && fbset -depth 32 -xres 1920 -yres 228
-;;
+	"ngp") # Load SNK Neo Geo Pocket timings
+		vcgencmd hdmi_timings 1392 0 41 125 125 240 0 3 2 17 0 0 4 60.000 0 26445280 1 && tvservice -e DMT\ 88 && tvservice -e DMT\ 87 && sleep 0.5 && fbset -xres 348 -yres 240 -depth 32
+	;;
+	"ngpc") # Load SNK Neo Geo Pocket Color timings
+		ntsc_neogeopocket;;
 
 	"atari2600") # Load Atari 2600 timings
 		ntsc_atari2600;;

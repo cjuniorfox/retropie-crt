@@ -1,5 +1,5 @@
 #!/bin/python
-import math, argparse
+import math, argparse, subprocess, time
 
 class VerticalTiming:
     def __init__(self,verticalLines,beam):
@@ -69,9 +69,29 @@ class Scan :
         
 
 
-def image(width,pal,interlaced,freq,oLeft,oRight,oTop,oBottom):
+def image(width,pal,interlaced,freq,oLeft,oRight,oTop,oBottom,verbose):
     o = Overscan(oLeft,oRight,oTop,oBottom);
     system = Scan(width, pal, interlaced, freq, o)
+
+    if verbose:
+        verbosely(system)
+    
+    strTimmings = str(system.hPixels.image) + " 1 " + \
+        str(round(system.hPixels.frontPorch)) + " " + \
+        str(round(system.hPixels.sync)) + " " + \
+        str(round(system.hPixels.backPorch)) + " " + \
+        str(system.vertPixels) + " 1 " + \
+        str(system.vLines.frontPorch) + " " +\
+        str(system.vLines.sync) + " " + \
+        str(system.vLines.backPorch) + " 0 0 " + \
+        str(system.hPixels.rep) + " " + \
+        str(system.vLines.freq) + " " + \
+        str(1 if system.interlaced else 0) + " " + \
+        str(system.pixelClock) + " 1"
+    
+    return ("hdmi_timings " + strTimmings)
+
+def verbosely(system):
     print("Vertical:")
     print(" Lines      :", system.vLines.scan,system.vTimming.scan,"(nS)")
     print(" Image      :", system.vertPixels, system.vTimming.image, "(nS)")
@@ -89,20 +109,15 @@ def image(width,pal,interlaced,freq,oLeft,oRight,oTop,oBottom):
     print(" Frequency  :", system.vLines.freq, "Hz")
     print("Pixel Clock: ", system.pixelClock);
 
-    strTimmings = str(system.hPixels.image) + " 1 " + \
-        str(round(system.hPixels.frontPorch)) + " " + \
-        str(round(system.hPixels.sync)) + " " + \
-        str(round(system.hPixels.backPorch)) + " " + \
-        str(system.vertPixels) + " 1 " + \
-        str(system.vLines.frontPorch) + " " +\
-        str(system.vLines.sync) + " " + \
-        str(system.vLines.backPorch) + " 0 0 " + \
-        str(system.hPixels.rep) + " " + \
-        str(system.vLines.freq) + " " + \
-        str(1 if system.interlaced else 0) + " " + \
-        str(system.pixelClock) + " 1"
-    
-    print ("\n hdmi_timings =",strTimmings)
+def apply(hdmi_timings):
+    vcgencmd = ['vcgencmd',hdmi_timings]
+    exec=subprocess.Popen(vcgencmd)
+    exec.wait()
+    time.sleep(1)
+    exec=subprocess.Popen(["tvservice","-e","DMT 87"])
+    exec.wait()
+    time.sleep(1)
+    exec.subprocess.Open(["tvservice","-e","DMT 88"])
 
 parser = argparse.ArgumentParser(description="Switch the HDMI output resolution for SDTV friendly modes")
 parser.add_argument("--width","-w", metavar = '720',type=int, help = "Width resolution value",default=720)
@@ -113,17 +128,24 @@ parser.add_argument("--overscan-left","-L",metavar="0",type=int,help="Overscan l
 parser.add_argument("--overscan-right","-R",metavar="0",type=int,help="Overscan right",default=0)
 parser.add_argument("--overscan-top","-T",metavar="0",type=int,help="Overscan top",default=0)
 parser.add_argument("--overscan-bottom","-B",metavar="0",type=int,help="Overscan bottom",default=0)
+parser.add_argument("--verbose","-v",action=argparse.BooleanOptionalAction,help="Print defailed data", default=False)
+parser.add_argument("--info","-i",action=argparse.BooleanOptionalAction,help="Only print without applyng any change",default=False)
 args = parser.parse_args()
 freq = float(args.frequency)
 if freq == 0:
     freq = 59.97 if not args.pal else 50
 
-image(args.width, 
+hdmi_timings = image(args.width, 
     args.pal, 
     not args.progressive,
     freq,
     args.overscan_left, 
     args.overscan_right, 
     args.overscan_top, 
-    args.overscan_bottom
+    args.overscan_bottom,
+    args.verbose
 )
+if args.info : 
+    print(hdmi_timings)
+else :
+    apply(hdmi_timings)

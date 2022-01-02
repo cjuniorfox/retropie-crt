@@ -1,4 +1,6 @@
-overscan_scale=1
-hdmi_timings=1440 0 110 139 203 448 0 11 11 17 0 0 2 60 1 29800000 1
-hdmi_group=2 
+overscan_scale=0
+hdmi_timings=1568 0 46 140 140 480 0 3 3 17 0 0 2 59.974 1 29830168 1
+hdmi_group=2
 hdmi_mode=87
+framebuffer_width=720
+framebuffer_height=448

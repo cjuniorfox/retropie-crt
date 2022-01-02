@@ -148,4 +148,9 @@ hdmi_timings = image(args.width,
 if args.info : 
     print(hdmi_timings)
 else :
-    apply(hdmi_timings)
+    try:
+        apply(hdmi_timings)
+    except FileNotFoundError :
+        print("Unable to apply the settings because either vcgencmd or tvservice was not found on this system. Are you running on Pi?")
+        print("Assuming you're running only just for information, follows below. Try next time using -i --info.")
+        print(hdmi_timings)

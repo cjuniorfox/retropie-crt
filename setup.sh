@@ -13,7 +13,7 @@ cp "resources/usr/bin/chvideo.py" /usr/bin/chvideo && chmod + /usr/bin/chvideo
 #Install the boot
 config=resources/boot/config.txt
 configtxt="$(</boot/config.txt)"
-parameters="$(awk -F "=" '{ print $1 }' < "${config}\nhdmi_timings=1")"
+parameters="$(awk -F "=" '{ print $1 }' < "${config}")"
 for p in ${parameters} ; do
     configtxt=$(echo "${configtxt}" | grep -v "${p}")
 done;

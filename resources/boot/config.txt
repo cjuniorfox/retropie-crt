@@ -1,5 +1,4 @@
 overscan_scale=0
-hdmi_timings=0
 hdmi_group=2
 hdmi_mode=87
 framebuffer_width=720

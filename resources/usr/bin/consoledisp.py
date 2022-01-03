@@ -98,6 +98,7 @@ console={
 
 cmd = console.get(args.console)
 try: 
-    subprocess.Popen(cmd)
+    exec = subprocess.Popen(cmd)
+    exec.wait()
 except FileNotFoundError :
     print("Unable to execute, program not found. \n",cmd)

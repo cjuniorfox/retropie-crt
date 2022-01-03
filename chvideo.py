@@ -29,12 +29,12 @@ class Overscan:
         self.bottom = bottom
 
 class HorizontalPixels:
-    def __init__(self,pixels,hTimming,overscan):
+    def __init__(self,width,hTimming,overscan):
         pixelRep = 1280
-        self.rep = int(math.ceil(pixelRep/pixels))
+        self.rep = int(math.ceil(pixelRep/width))
         oLeft = overscan.left * self.rep #Overscan left to the back porch
         oRight = overscan.right * self.rep #Overscan right to the front porch
-        self.image = pixels * self.rep
+        self.image = width * self.rep
         self.scan = (self.image + oLeft + oRight) * (hTimming.scan/ (hTimming.image))
         self.frontPorch = self.scan * (hTimming.frontPorch / hTimming.scan)+oRight
         self.backPorch = self.scan * (hTimming.backPorch / hTimming.scan)+oLeft
@@ -52,7 +52,7 @@ class HorizontalTimming:
         self.image = self.scan - self.totalBlank
 
 class Scan :
-    def __init__(self,hPixels, pal, interlaced, freq, overscan):
+    def __init__(self,horizPixels, pal, interlaced, freq, overscan):
         beam = 1000;
         lineFactor = (2 if interlaced else 1)
         self.interlaced = int(interlaced)
@@ -63,53 +63,56 @@ class Scan :
             self.vLines = VerticalLines(312.5, 288, 3, 3, freq,overscan)
             self.hTimming = HorizontalTimming(self.vLines,0.025,0.074,0.088,beam)
         self.vTimming = VerticalTiming(self.vLines,beam)
-        self.hPixels = HorizontalPixels(hPixels,self.hTimming,overscan)
+        self.hPixels = HorizontalPixels(horizPixels,self.hTimming,overscan)
+        self.horizPixels = horizPixels
         self.vertPixels = self.vLines.image * lineFactor
         self.pixelClock = int(round(self.vLines.scan * self.hPixels.scan * freq))
         
 
 
-def image(width,pal,interlaced,freq,oLeft,oRight,oTop,oBottom,verbose):
+def image(horizPixels,pal,interlaced,freq,oLeft,oRight,oTop,oBottom,verbose):
     o = Overscan(oLeft,oRight,oTop,oBottom);
-    system = Scan(width, pal, interlaced, freq, o)
+    timing = Scan(horizPixels, pal, interlaced, freq, o)
 
     if verbose:
-        verbosely(system)
+        verbosely(timing)
     
-    return system;
+    return timing;
     
-def hdmi_timings(system):
-    strTimmings = "hdmi_timings " + str(system.hPixels.image) + " 1 " + \
-        str(round(system.hPixels.frontPorch)) + " " + \
-        str(round(system.hPixels.sync)) + " " + \
-        str(round(system.hPixels.backPorch)) + " " + \
-        str(system.vertPixels) + " 1 " + \
-        str(system.vLines.frontPorch) + " " +\
-        str(system.vLines.sync) + " " + \
-        str(system.vLines.backPorch) + " 0 0 " + \
-        str(system.hPixels.rep) + " " + \
-        str(system.vLines.freq) + " " + \
-        str(1 if system.interlaced else 0) + " " + \
-        str(system.pixelClock) + " 1"
+def hdmi_timings(timing):
+    strTimmings = "hdmi_timings " + str(timing.hPixels.image) + " 1 " + \
+        str(round(timing.hPixels.frontPorch)) + " " + \
+        str(round(timing.hPixels.sync)) + " " + \
+        str(round(timing.hPixels.backPorch)) + " " + \
+        str(timing.vertPixels) + " 1 " + \
+        str(timing.vLines.frontPorch) + " " +\
+        str(timing.vLines.sync) + " " + \
+        str(timing.vLines.backPorch) + " 0 0 " + \
+        str(timing.hPixels.rep) + " " + \
+        str(timing.vLines.freq) + " " + \
+        str(1 if timing.interlaced else 0) + " " + \
+        str(timing.pixelClock) + " 1"
     return strTimmings;
 
-def verbosely(system):
+def verbosely(timing):
     print("Vertical:")
-    print(" Lines      :", system.vLines.scan,system.vTimming.scan,"(nS)")
-    print(" Image      :", system.vertPixels, system.vTimming.image, "(nS)")
-    print(" Sync Pulse :", system.vLines.sync, system.vTimming.sync, "(nS)")
-    print(" Front Porch:", system.vLines.frontPorch, system.vTimming.frontPorch, "(nS)")
-    print(" Back Porch :", system.vLines.backPorch, system.vTimming.backPorch, "(ns)")
-    print(" Total blank:", system.vLines.totalBlank, system.vTimming.totalBlank, "(nS)")
+    print("Vert. Res.  :", timing.vertPixels)
+    print(" Lines      :", timing.vLines.scan,timing.vTimming.scan,"(nS)")
+    print(" Image      :", timing.vertPixels, timing.vTimming.image, "(nS)")
+    print(" Sync Pulse :", timing.vLines.sync, timing.vTimming.sync, "(nS)")
+    print(" Front Porch:", timing.vLines.frontPorch, timing.vTimming.frontPorch, "(nS)")
+    print(" Back Porch :", timing.vLines.backPorch, timing.vTimming.backPorch, "(ns)")
+    print(" Total blank:", timing.vLines.totalBlank, timing.vTimming.totalBlank, "(nS)")
     print("Horizontal:")
-    print(" Scan       :", system.hPixels.scan, system.hTimming.scan,"(uS)")
-    print(" Image      :", system.hPixels.image, system.hTimming.image,"(uS)")
-    print(" Sync Pulse :", system.hPixels.sync, system.hTimming.sync, "(uS)")
-    print(" Front Porch:", system.hPixels.frontPorch, system.hTimming.frontPorch, "(uS)")
-    print(" Back Porch :", system.hPixels.backPorch, system.hTimming.backPorch, "(us)")
-    print(" Total blank:", system.hPixels.totalBlank, system.hTimming.totalBlank, "(uS)")
-    print(" Frequency  :", system.vLines.freq, "Hz")
-    print("Pixel Clock: ", system.pixelClock)
+    print(" Horiz. Res.:", timing.horizPixels)
+    print(" Scan       :", timing.hPixels.scan, timing.hTimming.scan,"(uS)")
+    print(" Image      :", timing.hPixels.image, timing.hTimming.image,"(uS)")
+    print(" Sync Pulse :", timing.hPixels.sync, timing.hTimming.sync, "(uS)")
+    print(" Front Porch:", timing.hPixels.frontPorch, timing.hTimming.frontPorch, "(uS)")
+    print(" Back Porch :", timing.hPixels.backPorch, timing.hTimming.backPorch, "(us)")
+    print(" Total blank:", timing.hPixels.totalBlank, timing.hTimming.totalBlank, "(uS)")
+    print(" Frequency  :", timing.vLines.freq, "Hz")
+    print("Pixel Clock: ", timing.pixelClock)
 
 def apply(timings):
     print(timings.vertPixels)
@@ -155,6 +158,6 @@ else :
     try:
         apply(timings)
     except FileNotFoundError :
-        print("Unable to apply the settings because either vcgencmd or tvservice was not found on this system. Are you running on Pi?")
+        print("Unable to apply the settings because either vcgencmd or tvservice was not found. Are you running on Pi?")
         print("Assuming you're running only just for information, follows below. Try next time using -i --info.")
         print(hdmi_timings(timings))

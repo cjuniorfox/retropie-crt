@@ -16,7 +16,7 @@ class VerticalLines:
         self.image = image - overscan.top - overscan.bottom
         self.frontPorch = int(frontPorch + overscan.bottom)
         self.sync = int(sync)
-        self.backPorch = int(math.ceil(self.scan - self.image - self.frontPorch - self.sync - overscan.bottom + overscan.top))
+        self.backPorch = int(math.ceil(self.scan - self.image - self.frontPorch - self.sync))
         self.totalBlank = self.backPorch + self.frontPorch + self.sync
         self.freq = freq
         self.lineFrequency = self.freq * self.scan

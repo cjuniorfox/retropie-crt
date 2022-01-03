@@ -15,9 +15,10 @@ config=resources/boot/config.txt
 configtxt="$(</boot/config.txt)"
 parameters="$(awk -F "=" '{ print $1 }' < "${config}")"
 for p in ${parameters} ; do
-    configtxt=$(echo "${file}" | grep -v "${p}")
+    configtxt=$(echo "${configtxt}" | grep -v "${p}")
 done;
 timings="$(chvideo -T 8 -B 8 -L 32 -R 32 -i)"
+echo "${configtxt}" > /boot/config.txt
 echo "${timings//s /s=}" >> /boot/config.txt
 cat "${config}" >> /boot/config.txt
 

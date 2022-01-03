@@ -6,17 +6,23 @@ import subprocess
 parser = argparse.ArgumentParser(description="Apply settings for desired game console")
 parser.add_argument("console",help="Desired game consol")
 parser.add_argument("--pal","-P",action='store_true',help="Apply PAL settings")
+parser.add_argument("--info","-i",action='store_true',help="Only print without applyng any change")
 args = parser.parse_args()
 isPal = args.pal
+info = args.info
 
 def getcmd(width,frequency,oTop=0,oBottom=0,oLeft=0,oRight=0,isProgressive=True,) :
     global isPal
+    global info
     freq = round(frequency * 0.833916958,3) if isPal else frequency
     cmd = ["chvideo","-w",str(width), "-f", str(freq), "-L",str(oLeft),"-R",str(oRight),"-T",str(oTop),"-B",str(oBottom)]
     if isProgressive :
         cmd.append("-p")
     if isPal :
         cmd.append("-P")
+    if info :
+        cmd.append("-i")
+
     return cmd
 
 def megadrive() :

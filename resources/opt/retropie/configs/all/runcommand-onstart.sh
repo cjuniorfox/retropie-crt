@@ -36,7 +36,7 @@
 systemName="$1"
 emuName="$2"
 
-if  "${systemName}" -eq "x68000" ; then
+if - "${systemName}" = "x68000" ]; then
 	consoledisp "${systemName}" --pal
 else
 	consoledisp "${systemName}"

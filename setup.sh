@@ -19,6 +19,7 @@ for p in ${parameters} ; do
 done;
 timings="$(chvideo -T 8 -B 8 -L 32 -R 32 -f 60 -i)"
 echo "${configtxt}" | grep -v "hdmi_timings" > /boot/config.txt
+timings="${timings//60.0/60}"
 echo "${timings//s /s=}" >> /boot/config.txt
 cat "${config}" >> /boot/config.txt
 

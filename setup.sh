@@ -4,15 +4,21 @@ if [[ "$(id -u)" -ne 0 ]]; then
     exit 1
 fi
 
-#Install the boot
-config=resources/boot/config.txt
-configtxt="$(cat /boot/config.txt)"
-echo "$configtxt" | grep -v 'overscan_scale\|hdmi_timings\|hdmi_group\|hdmi_mode' > /boot/config.txt
-cat "${config}" >> /boot/config.txt
-
-#now the remaining scripts
+#scripts
 runcommand_scripts="resources/opt/retropie/configs"
 retropie_configs="/opt/retropie/configs"
+
+cp "resources/usr/bin/chvideo.py" /usr/bin/chvideo && chmod + /usr/bin/chvideo
+
+#Install the boot
+config=resources/boot/config.txt
+configtxt="$(</boot/config.txt)"
+echo "$configtxt" | grep -v 'overscan_scale\|hdmi_timings\|hdmi_group\|hdmi_mode' > /boot/config.txt
+timings="${chvideo.py -T 8 -B 8 -L 32 -R 32 -i}"
+echo "${timings//s /s=}" >> /boot/config.txt
+cat "${config}" >> /boot/config.txt
+
+
 
 cp "${runcommand_scripts}"/all/runcommand-*.sh /opt/retropie/configs/all
 

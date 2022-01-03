@@ -33,9 +33,9 @@ class HorizontalPixels:
         pixelRep = 1280
         rep = int(math.ceil(pixelRep/width))
         self.rep = rep-(rep%2)
-        oLeft = overscan.left * self.rep #Overscan left to the back porch
-        oRight = overscan.right * self.rep #Overscan right to the front porch
-        self.image = width * self.rep
+        oLeft = max(overscan.left * self.rep,overscan.left) #Overscan left to the back porch
+        oRight = max(overscan.right * self.rep,overscan.right) #Overscan right to the front porch
+        self.image = max(width * self.rep, width)
         self.scan = (self.image + oLeft + oRight) * (hTimming.scan/ (hTimming.image))
         self.frontPorch = self.scan * (hTimming.frontPorch / hTimming.scan)+oRight
         self.backPorch = self.scan * (hTimming.backPorch / hTimming.scan)+oLeft

@@ -36,7 +36,11 @@
 systemName="$1"
 emuName="$2"
 
-consoledisp "${systemName}"
+if  "${systemName}" -eq "x68000" ; then
+	consoledisp "${systemName}" --pal
+else
+	consoledisp "${systemName}"
+fi;
 exit 0;
 
 pal_mastersystem(){

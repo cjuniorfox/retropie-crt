@@ -8,8 +8,8 @@ fi
 runcommand_scripts="resources/opt/retropie/configs"
 retropie_configs="/opt/retropie/configs"
 
-cp "resources/usr/bin/chvideo.py" /usr/bin/chvideo && chmod + /usr/bin/chvideo
-cp "resources/usr/bin/consoledisp.py" /usr/bin/consoledisp && chmod + /usr/bin/consoledisp
+cp "resources/usr/bin/chvideo.py" /usr/bin/chvideo && chmod +x /usr/bin/chvideo
+cp "resources/usr/bin/consoledisp.py" /usr/bin/consoledisp && chmod +x /usr/bin/consoledisp
 
 #Install the boot
 config=resources/boot/config.txt

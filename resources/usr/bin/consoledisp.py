@@ -56,7 +56,7 @@ def gameboy() :
     return getcmd(width=256,frequency=59.73,oLeft=10,oRight=10)
 
 def atari2600() :
-    return getcmd(width=348,frequency=59.92,oTop=-2,oBottom=-8)
+    return getcmd(width=348,frequency=59.92,oTop=-8,oBottom=-2)
 
 def atari5200() :
     return getcmd(width=352,frequency=59.92)

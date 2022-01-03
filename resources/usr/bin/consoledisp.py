@@ -92,7 +92,7 @@ console={
     'atari5200': atari5200(),
     'atari7800': atari7800(),
     'mame-libretro' : mame_libretro(),
-    'n64' : n64()
+    'n64' : n64(),
 }
 
 

@@ -36,6 +36,9 @@
 systemName="$1"
 emuName="$2"
 
+consoledisp "${systemName}"
+exit 0;
+
 pal_mastersystem(){
 	vcgencmd hdmi_timings 1136 1 35 101 120 288 0 2 2 19 0 0 4 50.000 0 21400000 1 && tvservice -e DMT\ 88 && tvservice -e DMT\ 87 && sleep 0.5 && fbset -xres 284 -yres 288 -depth 32
 }

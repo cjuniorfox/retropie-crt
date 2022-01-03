@@ -17,7 +17,7 @@ parameters="$(awk -F "=" '{ print $1 }' < "${config}")"
 for p in ${parameters} ; do
     configtxt=$(echo "${configtxt}" | grep -v "${p}")
 done;
-timings="$(chvideo -T 8 -B 8 -L 32 -R 32 -i)"
+timings="$(chvideo -T 8 -B 8 -L 32 -R 32 -f 60 -i)"
 echo "${configtxt}" | grep -v "hdmi_timings" > /boot/config.txt
 echo "${timings//s /s=}" >> /boot/config.txt
 cat "${config}" >> /boot/config.txt

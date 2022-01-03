@@ -76,7 +76,10 @@ def image(width,pal,interlaced,freq,oLeft,oRight,oTop,oBottom,verbose):
     if verbose:
         verbosely(system)
     
-    strTimmings = str(system.hPixels.image) + " 1 " + \
+    return system;
+    
+def hdmi_timings(system):
+    strTimmings = "hdmi_timings " + str(system.hPixels.image) + " 1 " + \
         str(round(system.hPixels.frontPorch)) + " " + \
         str(round(system.hPixels.sync)) + " " + \
         str(round(system.hPixels.backPorch)) + " " + \
@@ -88,8 +91,7 @@ def image(width,pal,interlaced,freq,oLeft,oRight,oTop,oBottom,verbose):
         str(system.vLines.freq) + " " + \
         str(1 if system.interlaced else 0) + " " + \
         str(system.pixelClock) + " 1"
-    
-    return ("hdmi_timings " + strTimmings)
+    return strTimmings;
 
 def verbosely(system):
     print("Vertical:")
@@ -109,8 +111,8 @@ def verbosely(system):
     print(" Frequency  :", system.vLines.freq, "Hz")
     print("Pixel Clock: ", system.pixelClock);
 
-def apply(hdmi_timings):
-    vcgencmd = ['vcgencmd',hdmi_timings]
+def apply(timings):
+    vcgencmd = ['vcgencmd',hdmi_timings(timings)]
     exec=subprocess.Popen(vcgencmd)
     exec.wait()
     exec=subprocess.Popen(["tvservice","-e","DMT 87"])
@@ -118,7 +120,7 @@ def apply(hdmi_timings):
     exec=subprocess.Popen(["tvservice","-e","DMT 88"])
     exec.wait()
     time.sleep(0.5)
-    subprocess.Popen(["fbset","-depth", "32"])
+    subprocess.Popen(["fbset","-depth", "32", "-xres",timings.hPixels.image, "-yres",timings.vertPixels])
 
 parser = argparse.ArgumentParser(description="Switch the HDMI output resolution for SDTV friendly modes")
 parser.add_argument("--width","-w", metavar = '720',type=int, help = "Width resolution value",default=720)
@@ -136,7 +138,7 @@ freq = float(args.frequency)
 if freq == 0:
     freq = 59.97 if not args.pal else 50
 
-hdmi_timings = image(args.width, 
+timings = image(args.width, 
     args.pal, 
     not args.progressive,
     freq,
@@ -147,11 +149,11 @@ hdmi_timings = image(args.width,
     args.verbose
 )
 if args.info : 
-    print(hdmi_timings)
+    print(hdmi_timings(timings))
 else :
     try:
-        apply(hdmi_timings)
+        apply(timings)
     except FileNotFoundError :
         print("Unable to apply the settings because either vcgencmd or tvservice was not found on this system. Are you running on Pi?")
         print("Assuming you're running only just for information, follows below. Try next time using -i --info.")
-        print(hdmi_timings)
+        print(hdmi_timings(timings))

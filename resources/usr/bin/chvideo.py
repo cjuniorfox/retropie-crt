@@ -31,7 +31,8 @@ class Overscan:
 class HorizontalPixels:
     def __init__(self,width,hTimming,overscan):
         pixelRep = 1280
-        self.rep = int(math.ceil(pixelRep/width))
+        rep = int(math.ceil(pixelRep/width))
+        self.rep = rep-(rep%2)
         oLeft = overscan.left * self.rep #Overscan left to the back porch
         oRight = overscan.right * self.rep #Overscan right to the front porch
         self.image = width * self.rep

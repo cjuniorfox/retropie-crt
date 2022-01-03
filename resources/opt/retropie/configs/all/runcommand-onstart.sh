@@ -41,8 +41,6 @@ if [ "${systemName}" = "x68000" ]; then
 else
 	consoledisp "${systemName}"
 fi;
-echo consoledisp
-pause
 exit 0;
 
 pal_mastersystem(){

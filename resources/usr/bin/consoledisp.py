@@ -59,7 +59,7 @@ def atari2600() :
     return getcmd(width=348,ntsc_freq=59.92,oTop=-8,oBottom=-2)
 
 def atari5200() :
-    return getcmd(width=352,ntsc_freq=59.92)
+    return getcmd(width=336,ntsc_freq=59.922745,oLeft=16,oRight=16)
 
 def atari7800() :
     return getcmd(width=348,ntsc_freq=59.92)

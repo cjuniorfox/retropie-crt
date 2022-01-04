@@ -71,7 +71,7 @@ def n64() :
     return getcmd(width=696,ntsc_freq=60,oLeft=10,oRight=10)
 
 def x68000() :
-    return getcmd(width=542,ntsc_freq=59.94,pal_freq=55.45,oTop=-14,oBottom=-2)
+    return getcmd(width=512,oLeft=10,oRight=10)
 
 console={
     'megadrive':megadrive(),

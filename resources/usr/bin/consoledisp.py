@@ -29,7 +29,7 @@ def megadrive() :
     return getcmd(width=1392,ntsc_freq=59.92)
 
 def mastersystem() :
-    return getcmd(width=283,ntsc_freq=59.92)
+    return getcmd(width=284,ntsc_freq=59.92)
 
 def tms9918() :
     return getcmd(width=256,ntsc_freq=59.92,oLeft=14,oRight=14,oTop=24,oBottom=24)

@@ -80,6 +80,7 @@ console={
     'segacd' : megadrive(),
     'mastersystem' : mastersystem(),
     'gamegear' : mastersystem(),
+    'sg-1000' : mastersystem(),
     'atarilynx' : atarilynx(),
     'neogeo' : neogeo(),
     'pcengine' : pcengine(),

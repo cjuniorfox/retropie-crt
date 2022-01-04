@@ -35,7 +35,7 @@ def tms9918() :
     return getcmd(width=256,ntsc_freq=59.92,oLeft=14,oRight=14,oTop=24,oBottom=24)
 
 def neogeo() :
-    return getcmd(width=348,ntsc_freq=59.185)
+    return getcmd(width=340,ntsc_freq=59.185)
 
 def nes() :
     return getcmd(width=256,ntsc_freq=60.1,oLeft=10,oRight=10)

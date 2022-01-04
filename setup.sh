@@ -57,4 +57,5 @@ file="$(<"$core_options")"
 for p in ${parameters}; do
     file=$(echo "${file}" | grep -v "${p}")
 done;
+echo "${file}"> "${core_options}"
 cat "${options_to_install}" >> "${core_options}"

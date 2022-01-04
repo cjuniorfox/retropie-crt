@@ -56,7 +56,7 @@ def gameboy() :
     return getcmd(width=320,ntsc_freq=59.73,oLeft=10,oRight=10)
 
 def atari2600() :
-    return getcmd(width=348,ntsc_freq=59.92,oTop=-8,oBottom=-2)
+    return getcmd(width=348,ntsc_freq=59.92,oTop=-9,oBottom=-1)
 
 def atari5200() :
     return getcmd(width=336,ntsc_freq=59.922745,oLeft=16,oRight=16)
@@ -71,7 +71,7 @@ def n64() :
     return getcmd(width=696,ntsc_freq=60,oLeft=10,oRight=10)
 
 def x68000() :
-    return getcmd(width=1024,oLeft=10,oRight=10,oTop=-4,oBottom=-2,ntsc_freq=59.94)
+    return getcmd(width=1024,oLeft=10,oRight=10,oTop=-5,ntsc_freq=59.94)
 
 console={
     'megadrive':megadrive(),

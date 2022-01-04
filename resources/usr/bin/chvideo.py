@@ -29,16 +29,28 @@ class Overscan:
         self.bottom = bottom
 
 class HorizontalPixels:
-    def __init__(self,width,hTimming,overscan):
-        pixelRep = 960
-        rep = int(math.ceil(pixelRep/width))
-        self.rep = rep-(rep%2)
-        oLeft = max(overscan.left * self.rep,overscan.left) #Overscan left to the back porch
-        oRight = max(overscan.right * self.rep,overscan.right) #Overscan right to the front porch
-        self.image = max(width * self.rep, width)
-        self.scan = (self.image + oLeft + oRight) * (hTimming.scan/ (hTimming.image))
-        self.frontPorch = self.scan * (hTimming.frontPorch / hTimming.scan)+oRight
-        self.backPorch = self.scan * (hTimming.backPorch / hTimming.scan)+oLeft
+    def defineScanAndRep(self,image,hTimming,overscan):
+        max_scan = 2048
+        # Scan consists into image + back porch + front porch
+        scan = (image + overscan.left + overscan.right) * (hTimming.scan/ (hTimming.image))
+        self.rep = 1
+        self.scan = scan
+        #Multiply rep until scan superates max_scan
+        while self.scan < max_scan:
+            self.rep = int(self.rep * max(self.rep,2))
+            self.scan = int(scan * self.rep)
+        #Do one step below
+        while self.scan > max_scan and (self.scan / 2) > image:
+            self.rep = int(self.rep / 2)
+            self.scan = int(scan * self.rep)
+
+    def __init__(self,image,hTimming,overscan):
+        self.defineScanAndRep(image,hTimming,overscan)
+        self.image = image * self.rep
+        #Overscan right at the front porch
+        self.frontPorch = self.scan * (hTimming.frontPorch / hTimming.scan)+(overscan.right * self.rep) 
+        #Overscan left to the back porch
+        self.backPorch = self.scan * (hTimming.backPorch / hTimming.scan)+ (overscan.left * self.rep)  
         self.sync = self.scan * (hTimming.sync / hTimming.scan)
         self.totalBlank = self.frontPorch + self.backPorch + self.sync
 
@@ -81,6 +93,9 @@ def image(horizPixels,pal,interlaced,freq,oLeft,oRight,oTop,oBottom,verbose):
     return timing;
     
 def hdmi_timings(timing):
+    #If rep equals one, so rep isn't not applyable
+    rep = 0 if timing.hPixels.rep == 1 else timing.hPixels.rep 
+
     strTimmings = "hdmi_timings " + str(timing.hPixels.image) + " 1 " + \
         str(round(timing.hPixels.frontPorch)) + " " + \
         str(round(timing.hPixels.sync)) + " " + \
@@ -89,7 +104,7 @@ def hdmi_timings(timing):
         str(timing.vLines.frontPorch) + " " +\
         str(timing.vLines.sync) + " " + \
         str(timing.vLines.backPorch) + " 0 0 " + \
-        str(timing.hPixels.rep) + " " + \
+        str(rep) + " " + \
         str(timing.vLines.freq) + " " + \
         str(1 if timing.interlaced else 0) + " " + \
         str(timing.pixelClock) + " 1"

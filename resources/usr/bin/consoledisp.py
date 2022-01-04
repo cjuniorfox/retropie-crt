@@ -53,7 +53,7 @@ def atarilynx() :
     return getcmd(width=348,ntsc_freq=59.94)
 
 def gameboy() :
-    return getcmd(width=256,ntsc_freq=59.73,oLeft=10,oRight=10)
+    return getcmd(width=320,ntsc_freq=59.73,oLeft=10,oRight=10)
 
 def atari2600() :
     return getcmd(width=348,ntsc_freq=59.92,oTop=-8,oBottom=-2)

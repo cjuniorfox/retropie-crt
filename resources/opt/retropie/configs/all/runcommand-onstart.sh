@@ -40,6 +40,7 @@ if [ "${systemName}" = "x68000" ]; then
 	consoledisp "${systemName}"
 else
 	consoledisp "${systemName}"
+	sleep 2
 fi;
 exit 0;
 

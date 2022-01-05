@@ -7,13 +7,14 @@ parser = argparse.ArgumentParser(description="Apply settings for desired game co
 parser.add_argument("console",help="Desired game consol")
 parser.add_argument("--pal","-P",action='store_true',help="Apply PAL settings")
 parser.add_argument("--info","-i",action='store_true',help="Only print without applyng any change")
+parser.add_argument("--verbose","-v",action='store_true',help="Detailed information")
 args = parser.parse_args()
 isPal = args.pal
 info = args.info
+verbose = args.verbose
 
 def getcmd(width=348,ntsc_freq=59.975,pal_freq=50.01,oTop=0,oBottom=0,oLeft=0,oRight=0,isProgressive=True) :
-    global isPal
-    global info
+    global isPal, info, verbose
     freq = pal_freq if isPal else ntsc_freq
     cmd = ["chvideo","-w",str(width), "-f", str(freq), "-L",str(oLeft),"-R",str(oRight),"-T",str(oTop),"-B",str(oBottom)]
     if isProgressive :
@@ -22,6 +23,8 @@ def getcmd(width=348,ntsc_freq=59.975,pal_freq=50.01,oTop=0,oBottom=0,oLeft=0,oR
         cmd.append("-P")
     if info :
         cmd.append("-i")
+    if verbose :
+        cmd.append("-v")
 
     return cmd
 
@@ -58,7 +61,7 @@ def gameboy() :
 def atari2600() :
     return getcmd(width=348,ntsc_freq=59.92,oTop=-9,oBottom=-1)
 
-def atari5200() :
+def atari800() :
     return getcmd(width=336,ntsc_freq=59.922745,oLeft=16,oRight=16)
 
 def atari7800() :
@@ -96,7 +99,8 @@ console={
     'ngp' : ngp(),
     'ngpc' : ngp(),
     'atari2600': atari2600(),
-    'atari5200': atari5200(),
+    'atari800': atari800(),
+    'atari5200': atari800(),
     'atari7800': atari7800(),
     'mame-libretro' : mame_libretro(),
     'n64' : n64(),

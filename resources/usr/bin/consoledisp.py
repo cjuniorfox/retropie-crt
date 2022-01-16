@@ -74,7 +74,7 @@ def ngp() :
     return getcmd(width=160,ntsc_freq=60,oLeft=8,oRight=8,oTop=8,oBottom=8)
 
 def n64() :
-    return getcmd(width=696,ntsc_freq=60,oLeft=10,oRight=10)
+    return getcmd(width=640,ntsc_freq=60,oLeft=10,oRight=10)
 
 def x68000() :
     return getcmd(width=1024,oLeft=10,oRight=10,ntsc_freq=59.94)

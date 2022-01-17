@@ -68,7 +68,7 @@ def atari7800() :
     return getcmd(width=348,ntsc_freq=59.92)
 
 def ngp() :
-    return getcmd(width=256,ntsc_freq=60,oLeft=10,oRight=10)
+    return getcmd(width=320,ntsc_freq=60,oLeft=10,oRight=10)
 
 def n64() :
     return getcmd(width=696,ntsc_freq=60,oLeft=10,oRight=10)

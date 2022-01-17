@@ -1,25 +1,56 @@
 #!/usr/bin/python3
-import math, argparse, subprocess, time
+import math, argparse, subprocess, time,json
 
-class VerticalTiming:
-    def __init__(self,verticalLines,beam):
-        self.scan = beam / verticalLines.freq
-        self.image = (self.scan * verticalLines.image)/verticalLines.scan
-        self.frontPorch = (self.scan * verticalLines.frontPorch) / verticalLines.scan
-        self.sync = (self.scan * verticalLines.sync) / verticalLines.scan
-        self.backPorch = (self.scan * verticalLines.backPorch) / verticalLines.scan
-        self.totalBlank = self.frontPorch + self.sync + self.backPorch
+class Blanking:
+    class Horizontal:
+        def __init__(self,isPAL):
+            if isPAL:
+                self.front_porch_factor = 0.025
+                self.sync_pulse_factor = 0.074
+                self.back_porch_factor = 0.088
+            else:
+                self.front_porch_factor = 0.024
+                self.sync_pulse_factor = 0.074
+                self.back_porch_factor = 0.074 
+            pass
+    class Vertical:
+        def __init__(self,isPAL):
+            if isPAL:
+                self.scanlines = 312.5
+                self.resolution = 288
+                self.front_porch = 3
+                self.sync_pulse = 3
+            else:
+                self.scanlines = 262.5
+                self.resolution = 240
+                self.front_porch = 3
+                self.sync_pulse = 3
+        def back_porch(self):
+            return int(math.ceil(self.scanlines - self.resolution - self.front_porch - self.sync_pulse))
+    def __init__(self,isPAL):
+        self.vertical = Blanking.Vertical(isPAL)
+        self.horizontal = Blanking.Horizontal(isPAL)
+        
 
-class VerticalLines:
-    def __init__(self, scan, image, frontPorch, sync, freq, overscan):
+class VerticalClock:
+    def __init__(self,vertical,beam):
+        self.scan = beam / vertical.freq
+        self.image = (self.scan * vertical.image)/vertical.scan
+        self.front_porch = (self.scan * vertical.front_porch) / vertical.scan
+        self.sync = (self.scan * vertical.sync) / vertical.scan
+        self.back_porch = (self.scan * vertical.back_porch) / vertical.scan
+        self.blank = self.front_porch + self.sync + self.back_porch
+
+class Vertical:
+    def __init__(self, scan, image, front_porch, sync, freq, overscan):
         self.scan = scan
         self.image = image - overscan.top - overscan.bottom
-        self.frontPorch = int(frontPorch + overscan.bottom)
+        self.front_porch = int(front_porch + overscan.bottom)
         self.sync = int(sync)
-        self.backPorch = int(math.ceil(self.scan - self.image - self.frontPorch - self.sync))
-        self.totalBlank = self.backPorch + self.frontPorch + self.sync
+        self.back_porch = int(math.ceil(self.scan - self.image - self.front_porch - self.sync))
+        self.blank = self.back_porch + self.front_porch + self.sync
         self.freq = freq
-        self.lineFrequency = self.freq * self.scan
+        self.frequency = self.freq * self.scan
 
 class Overscan:
     def __init__(self,left,right,top,bottom):
@@ -28,11 +59,11 @@ class Overscan:
         self.top = top
         self.bottom = bottom
 
-class HorizontalPixels:
-    def defineScanAndRep(self,image,hTimming,overscan):
+class Horizontal:
+    def defineScanAndRep(self,image,horizontal_clock,overscan):
         max_scan = 2048
         # Scan consists into image + back porch + front porch
-        scan = (image + overscan.left + overscan.right) * (hTimming.scan/ (hTimming.image))
+        scan = (image + overscan.left + overscan.right) * (horizontal_clock.scan/ (horizontal_clock.image))
         self.rep = 1
         self.scan = scan
         #Multiply rep until scan superates max_scan
@@ -44,94 +75,96 @@ class HorizontalPixels:
             self.rep = int(self.rep / 2)
             self.scan = int(scan * self.rep)
 
-    def __init__(self,image,hTimming,overscan):
-        self.defineScanAndRep(image,hTimming,overscan)
+    def __init__(self,image,horizontal_clock,overscan):
+        self.defineScanAndRep(image,horizontal_clock,overscan)
         self.image = image * self.rep
         #Overscan right at the front porch
-        self.frontPorch = self.scan * (hTimming.frontPorch / hTimming.scan)+(overscan.right * self.rep) 
+        self.front_porch = self.scan * (horizontal_clock.front_porch / horizontal_clock.scan)+(overscan.right * self.rep) 
         #Overscan left to the back porch
-        self.backPorch = self.scan * (hTimming.backPorch / hTimming.scan)+ (overscan.left * self.rep)  
-        self.sync = self.scan * (hTimming.sync / hTimming.scan)
-        self.totalBlank = self.frontPorch + self.backPorch + self.sync
+        self.back_porch = self.scan * (horizontal_clock.back_porch / horizontal_clock.scan)+ (overscan.left * self.rep)  
+        self.sync = self.scan * (horizontal_clock.sync / horizontal_clock.scan)
+        self.blank = self.front_porch + self.back_porch + self.sync
 
 
-class HorizontalTimming:
-    def __init__(self, v, factorfp, factorsp,factorbp,beam):
+class HorizontalClock:
+    def __init__(self, v, front_porch_factor, sync_pulse_factor,back_porch_factor,beam):
         self.scan = (beam / v.freq / v.scan) * 1000
-        self.frontPorch = self.scan * factorfp
-        self.sync = self.scan * factorsp
-        self.backPorch = self.scan * factorbp
-        self.totalBlank = self.frontPorch + self.backPorch + self.sync
-        self.image = self.scan - self.totalBlank
+        self.front_porch = self.scan * front_porch_factor
+        self.sync = self.scan * sync_pulse_factor
+        self.back_porch = self.scan * back_porch_factor
+        self.blank = self.front_porch + self.back_porch + self.sync
+        self.image = self.scan - self.blank
 
 class Scan :
-    def __init__(self,horizPixels, pal, interlaced, freq, overscan):
-        beam = 1000;
-        lineFactor = (2 if interlaced else 1)
+    def __init__(self,x_resolution, isPAL, interlaced, freq, overscan):
+        beam = 1000
+        y_factor = (2 if interlaced else 1)
         self.interlaced = int(interlaced)
+        blanking = Blanking(isPAL)
         #NTSC
-        self.vLines = VerticalLines(262.5, 240, 3, 3, freq,overscan)
-        self.hTimming = HorizontalTimming(self.vLines,0.024,0.074,0.074,beam)
-        if pal :
-            self.vLines = VerticalLines(312.5, 288, 3, 3, freq,overscan)
-            self.hTimming = HorizontalTimming(self.vLines,0.025,0.074,0.088,beam)
-        self.vTimming = VerticalTiming(self.vLines,beam)
-        self.hPixels = HorizontalPixels(horizPixels,self.hTimming,overscan)
-        self.horizPixels = horizPixels
-        self.vertPixels = self.vLines.image * lineFactor
-        self.pixelClock = int(round(self.vLines.scan * self.hPixels.scan * freq))
+        self.vertical = Vertical(262.5, 240, 3, 3, freq,overscan)
+        #self.vertical = Vertical(blanking,freq,overscan)
+        self.horizontal_clock = HorizontalClock(self.vertical,0.024,0.074,0.074,beam)
+        if isPAL :
+            self.vertical = Vertical(312.5, 288, 3, 3, freq,overscan)
+            self.horizontal_clock = HorizontalClock(self.vertical,0.025,0.074,0.088,beam)
+        self.vertical_clock = VerticalClock(self.vertical,beam)
+        self.horizontal = Horizontal(x_resolution,self.horizontal_clock,overscan)
+        self.x_resolution = x_resolution
+        self.y_resolution = self.vertical.image * y_factor
+        self.pixel_clock = int(round(self.vertical.scan * self.horizontal.scan * freq))
         
 
 
-def image(horizPixels,pal,interlaced,freq,oLeft,oRight,oTop,oBottom,verbose):
-    o = Overscan(oLeft,oRight,oTop,oBottom);
-    timing = Scan(horizPixels, pal, interlaced, freq, o)
-
-    if verbose:
-        verbosely(timing)
-    
-    return timing;
+def image(x_resolution,pal,interlaced,freq,oLeft,oRight,oTop,oBottom):
+    o = Overscan(oLeft,oRight,oTop,oBottom)
+    timing = Scan(x_resolution, pal, interlaced, freq, o)
+    return timing
     
 def hdmi_timings(timing):
     #If rep equals one, so rep isn't not applyable
-    rep = 0 if timing.hPixels.rep == 1 else timing.hPixels.rep 
+    rep = 0 if timing.horizontal.rep == 1 else timing.horizontal.rep 
 
-    strTimmings = "hdmi_timings " + str(timing.hPixels.image) + " 1 " + \
-        str(round(timing.hPixels.frontPorch)) + " " + \
-        str(round(timing.hPixels.sync)) + " " + \
-        str(round(timing.hPixels.backPorch)) + " " + \
-        str(timing.vertPixels) + " 1 " + \
-        str(timing.vLines.frontPorch) + " " +\
-        str(timing.vLines.sync) + " " + \
-        str(timing.vLines.backPorch) + " 0 0 " + \
+    strTimmings = "hdmi_timings " + str(timing.horizontal.image) + " 1 " + \
+        str(round(timing.horizontal.front_porch)) + " " + \
+        str(round(timing.horizontal.sync)) + " " + \
+        str(round(timing.horizontal.back_porch)) + " " + \
+        str(timing.y_resolution) + " 1 " + \
+        str(timing.vertical.front_porch) + " " +\
+        str(timing.vertical.sync) + " " + \
+        str(timing.vertical.back_porch) + " 0 0 " + \
         str(rep) + " " + \
-        str(timing.vLines.freq) + " " + \
+        str(timing.vertical.freq) + " " + \
         str(1 if timing.interlaced else 0) + " " + \
-        str(timing.pixelClock) + " 1"
-    return strTimmings;
+        str(timing.pixel_clock) + " 1"
+    return strTimmings
+
+def outputjson(timming):
+    json_data = json.dumps(timming,default=lambda o: o.__dict__, indent=4)
+    return json_data
 
 def verbosely(timing):
     print("Vertical:")
-    print("Vert. Res.  :", timing.vertPixels)
-    print(" Lines      :", timing.vLines.scan,timing.vTimming.scan,"(nS)")
-    print(" Image      :", timing.vertPixels, timing.vTimming.image, "(nS)")
-    print(" Sync Pulse :", timing.vLines.sync, timing.vTimming.sync, "(nS)")
-    print(" Front Porch:", timing.vLines.frontPorch, timing.vTimming.frontPorch, "(nS)")
-    print(" Back Porch :", timing.vLines.backPorch, timing.vTimming.backPorch, "(ns)")
-    print(" Total blank:", timing.vLines.totalBlank, timing.vTimming.totalBlank, "(nS)")
+    print("Vert. Res.  :", timing.y_resolution)
+    print(" Lines      :", timing.vertical.scan,timing.vertical_clock.scan,"(nS)")
+    print(" Image      :", timing.y_resolution, timing.vertical_clock.image, "(nS)")
+    print(" Sync Pulse :", timing.vertical.sync, timing.vertical_clock.sync, "(nS)")
+    print(" Front Porch:", timing.vertical.front_porch, timing.vertical_clock.front_porch, "(nS)")
+    print(" Back Porch :", timing.vertical.back_porch, timing.vertical_clock.back_porch, "(ns)")
+    print(" Total blank:", timing.vertical.blank, timing.vertical_clock.blank, "(nS)")
     print("Horizontal:")
-    print(" Horiz. Res.:", timing.horizPixels)
-    print(" Scan       :", timing.hPixels.scan, timing.hTimming.scan,"(uS)")
-    print(" Image      :", timing.hPixels.image, timing.hTimming.image,"(uS)")
-    print(" Sync Pulse :", timing.hPixels.sync, timing.hTimming.sync, "(uS)")
-    print(" Front Porch:", timing.hPixels.frontPorch, timing.hTimming.frontPorch, "(uS)")
-    print(" Back Porch :", timing.hPixels.backPorch, timing.hTimming.backPorch, "(us)")
-    print(" Total blank:", timing.hPixels.totalBlank, timing.hTimming.totalBlank, "(uS)")
-    print(" Frequency  :", timing.vLines.freq, "Hz")
-    print("Pixel Clock: ", timing.pixelClock)
+    print(" Horiz. Res.:", timing.x_resolution)
+    print(" Scan       :", timing.horizontal.scan, timing.horizontal_clock.scan,"(uS)")
+    print(" Image      :", timing.horizontal.image, timing.horizontal_clock.image,"(uS)")
+    print(" Sync Pulse :", timing.horizontal.sync, timing.horizontal_clock.sync, "(uS)")
+    print(" Front Porch:", timing.horizontal.front_porch, timing.horizontal_clock.front_porch, "(uS)")
+    print(" Back Porch :", timing.horizontal.back_porch, timing.horizontal_clock.back_porch, "(us)")
+    print(" Total blank:", timing.horizontal.blank, timing.horizontal_clock.blank, "(uS)")
+    print(" Frequency  :", timing.vertical.freq, "Hz")
+    print("Pixel Clock: ", timing.pixel_clock)
 
 def apply(timings):
-    print(timings.vertPixels)
+    print(timings.y_resolution)
     vcgencmd = ['vcgencmd',hdmi_timings(timings)]
     exec=subprocess.Popen(vcgencmd)
     exec.wait()
@@ -140,7 +173,7 @@ def apply(timings):
     exec=subprocess.Popen(["tvservice","-e","DMT 88"])
     exec.wait()
     time.sleep(0.5)
-    subprocess.Popen(["fbset","-depth", "32", "-xres",str(timings.horizPixels), "-yres",str(timings.vertPixels)])
+    subprocess.Popen(["fbset","-depth", "32", "-xres",str(timings.x_resolution), "-yres",str(timings.y_resolution)])
 
 parser = argparse.ArgumentParser(description="Switch the HDMI output resolution for SDTV friendly modes")
 parser.add_argument("--width","-w", metavar = '720',type=int, help = "Width resolution value",default=720)
@@ -152,6 +185,7 @@ parser.add_argument("--overscan-right","-R",metavar="0",type=int,help="Overscan 
 parser.add_argument("--overscan-top","-T",metavar="0",type=int,help="Overscan top",default=0)
 parser.add_argument("--overscan-bottom","-B",metavar="0",type=int,help="Overscan bottom",default=0)
 parser.add_argument("--verbose","-v",action='store_true',help="Print defailed data", default=False)
+parser.add_argument("--json","-j",action='store_true',help="Print detailed data as JSON", default=False)
 parser.add_argument("--info","-i",action='store_true',help="Only print without applyng any change",default=False)
 args = parser.parse_args()
 freq = float(args.frequency)
@@ -165,9 +199,13 @@ timings = image(args.width,
     args.overscan_left, 
     args.overscan_right, 
     args.overscan_top, 
-    args.overscan_bottom,
-    args.verbose
+    args.overscan_bottom
 )
+if args.json :
+    print(outputjson(timings))
+elif args.verbose :
+    verbosely(timings)
+
 if args.info : 
     print(hdmi_timings(timings))
 else :

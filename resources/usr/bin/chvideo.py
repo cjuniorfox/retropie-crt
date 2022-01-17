@@ -1,18 +1,19 @@
 #!/usr/bin/python3
 import math, argparse, subprocess, time,json
 
-class Blanking:
+class Specs:
     class Horizontal:
         def __init__(self,isPAL):
             if isPAL:
-                self.front_porch_factor = 0.025
-                self.sync_pulse_factor = 0.074
-                self.back_porch_factor = 0.088
+                self.front_porch = 0.025
+                self.sync_pulse = 0.074
+                self.back_porch = 0.088
             else:
-                self.front_porch_factor = 0.024
-                self.sync_pulse_factor = 0.074
-                self.back_porch_factor = 0.074 
-            pass
+                self.front_porch = 0.024
+                self.sync_pulse = 0.074
+                self.back_porch = 0.074 
+            self.blanking_interval = self.front_porch + self.back_porch + self.sync_pulse
+            self.image = 1.000 - self.blanking_interval
     class Vertical:
         def __init__(self,isPAL):
             if isPAL:
@@ -28,29 +29,29 @@ class Blanking:
         def back_porch(self):
             return int(math.ceil(self.scanlines - self.resolution - self.front_porch - self.sync_pulse))
     def __init__(self,isPAL):
-        self.vertical = Blanking.Vertical(isPAL)
-        self.horizontal = Blanking.Horizontal(isPAL)
+        self.vertical = Specs.Vertical(isPAL)
+        self.horizontal = Specs.Horizontal(isPAL)
         
 
 class VerticalClock:
     def __init__(self,vertical,beam):
-        self.scan = beam / vertical.freq
-        self.image = (self.scan * vertical.image)/vertical.scan
-        self.front_porch = (self.scan * vertical.front_porch) / vertical.scan
-        self.sync = (self.scan * vertical.sync) / vertical.scan
-        self.back_porch = (self.scan * vertical.back_porch) / vertical.scan
-        self.blank = self.front_porch + self.sync + self.back_porch
+        self.scanlines = beam / vertical.fps
+        self.image = (self.scanlines * vertical.image)/vertical.scanlines
+        self.front_porch = (self.scanlines * vertical.front_porch) / vertical.scanlines
+        self.sync_pulse = (self.scanlines * vertical.sync_pulse) / vertical.scanlines
+        self.back_porch = (self.scanlines * vertical.back_porch) / vertical.scanlines
+        self.blanking_interval = self.front_porch + self.sync_pulse + self.back_porch
 
 class Vertical:
-    def __init__(self, scan, image, front_porch, sync, freq, overscan):
-        self.scan = scan
-        self.image = image - overscan.top - overscan.bottom
-        self.front_porch = int(front_porch + overscan.bottom)
-        self.sync = int(sync)
-        self.back_porch = int(math.ceil(self.scan - self.image - self.front_porch - self.sync))
-        self.blank = self.back_porch + self.front_porch + self.sync
-        self.freq = freq
-        self.frequency = self.freq * self.scan
+    def __init__(self, specs, fps, overscan):
+        self.scanlines = specs.vertical.scanlines
+        self.image = specs.vertical.resolution - overscan.top - overscan.bottom
+        self.front_porch = int(specs.vertical.front_porch + overscan.bottom)
+        self.sync_pulse = int(specs.vertical.sync_pulse)
+        self.back_porch = int(math.ceil(self.scanlines - self.image - self.front_porch - self.sync_pulse))
+        self.blanking_interval = self.back_porch + self.front_porch + self.sync_pulse
+        self.fps = fps
+        self.frequency = self.fps * self.scanlines
 
 class Overscan:
     def __init__(self,left,right,top,bottom):
@@ -61,58 +62,55 @@ class Overscan:
 
 class Horizontal:
     def defineScanAndRep(self,image,horizontal_clock,overscan):
-        max_scan = 2048
+        max_scanline = 2048
         # Scan consists into image + back porch + front porch
-        scan = (image + overscan.left + overscan.right) * (horizontal_clock.scan/ (horizontal_clock.image))
+        scanline = (image + overscan.left + overscan.right) * (horizontal_clock.scanline/ (horizontal_clock.image))
         self.rep = 1
-        self.scan = scan
-        #Multiply rep until scan superates max_scan
-        while self.scan < max_scan:
+        self.scanline = scanline
+        #Multiply rep until scanline superates max_scanline
+        while self.scanline < max_scanline:
             self.rep = int(self.rep * max(self.rep,2))
-            self.scan = int(scan * self.rep)
+            self.scanline = int(scanline * self.rep)
         #Do one step below
-        while self.scan > max_scan and (self.scan / 2) > image:
+        while self.scanline > max_scanline and (self.scanline / 2) > image:
             self.rep = int(self.rep / 2)
-            self.scan = int(scan * self.rep)
+            self.scanline = int(scanline * self.rep)
 
     def __init__(self,image,horizontal_clock,overscan):
         self.defineScanAndRep(image,horizontal_clock,overscan)
         self.image = image * self.rep
         #Overscan right at the front porch
-        self.front_porch = self.scan * (horizontal_clock.front_porch / horizontal_clock.scan)+(overscan.right * self.rep) 
+        self.front_porch = self.scanline * (horizontal_clock.front_porch / horizontal_clock.scanline)+(overscan.right * self.rep) 
         #Overscan left to the back porch
-        self.back_porch = self.scan * (horizontal_clock.back_porch / horizontal_clock.scan)+ (overscan.left * self.rep)  
-        self.sync = self.scan * (horizontal_clock.sync / horizontal_clock.scan)
-        self.blank = self.front_porch + self.back_porch + self.sync
+        self.back_porch = self.scanline * (horizontal_clock.back_porch / horizontal_clock.scanline)+ (overscan.left * self.rep)  
+        self.sync_pulse = self.scanline * (horizontal_clock.sync_pulse / horizontal_clock.scanline)
+        self.blanking_interval = self.front_porch + self.back_porch + self.sync_pulse
 
 
 class HorizontalClock:
-    def __init__(self, v, front_porch_factor, sync_pulse_factor,back_porch_factor,beam):
-        self.scan = (beam / v.freq / v.scan) * 1000
-        self.front_porch = self.scan * front_porch_factor
-        self.sync = self.scan * sync_pulse_factor
-        self.back_porch = self.scan * back_porch_factor
-        self.blank = self.front_porch + self.back_porch + self.sync
-        self.image = self.scan - self.blank
+    def __init__(self, vertical, specs, beam):
+        self.scanline = (beam / vertical.fps / vertical.scanlines) * 1000
+        self.front_porch = self.scanline * specs.horizontal.front_porch
+        self.sync_pulse = self.scanline * specs.horizontal.sync_pulse
+        self.back_porch = self.scanline * specs.horizontal.back_porch
+        self.blanking_interval = self.scanline * specs.horizontal.blanking_interval
+        self.image = self.scanline * specs.horizontal.image
 
 class Scan :
-    def __init__(self,x_resolution, isPAL, interlaced, freq, overscan):
+    def __init__(self,x_resolution, isPAL, interlaced, fps, overscan):
         beam = 1000
         y_factor = (2 if interlaced else 1)
         self.interlaced = int(interlaced)
-        blanking = Blanking(isPAL)
+        specs = Specs(isPAL)
         #NTSC
-        self.vertical = Vertical(262.5, 240, 3, 3, freq,overscan)
-        #self.vertical = Vertical(blanking,freq,overscan)
-        self.horizontal_clock = HorizontalClock(self.vertical,0.024,0.074,0.074,beam)
-        if isPAL :
-            self.vertical = Vertical(312.5, 288, 3, 3, freq,overscan)
-            self.horizontal_clock = HorizontalClock(self.vertical,0.025,0.074,0.088,beam)
+        #self.vertical = Vertical(262.5, 240, 3, 3, freq,overscan)
+        self.vertical = Vertical(specs,fps,overscan)
+        self.horizontal_clock = HorizontalClock(self.vertical,specs,beam)
         self.vertical_clock = VerticalClock(self.vertical,beam)
         self.horizontal = Horizontal(x_resolution,self.horizontal_clock,overscan)
         self.x_resolution = x_resolution
         self.y_resolution = self.vertical.image * y_factor
-        self.pixel_clock = int(round(self.vertical.scan * self.horizontal.scan * freq))
+        self.pixel_clock = int(round(self.vertical.scanlines * self.horizontal.scanline * freq))
         
 
 
@@ -127,14 +125,14 @@ def hdmi_timings(timing):
 
     strTimmings = "hdmi_timings " + str(timing.horizontal.image) + " 1 " + \
         str(round(timing.horizontal.front_porch)) + " " + \
-        str(round(timing.horizontal.sync)) + " " + \
+        str(round(timing.horizontal.sync_pulse)) + " " + \
         str(round(timing.horizontal.back_porch)) + " " + \
         str(timing.y_resolution) + " 1 " + \
         str(timing.vertical.front_porch) + " " +\
-        str(timing.vertical.sync) + " " + \
+        str(timing.vertical.sync_pulse) + " " + \
         str(timing.vertical.back_porch) + " 0 0 " + \
         str(rep) + " " + \
-        str(timing.vertical.freq) + " " + \
+        str(timing.vertical.fps) + " " + \
         str(1 if timing.interlaced else 0) + " " + \
         str(timing.pixel_clock) + " 1"
     return strTimmings
@@ -146,25 +144,24 @@ def outputjson(timming):
 def verbosely(timing):
     print("Vertical:")
     print("Vert. Res.  :", timing.y_resolution)
-    print(" Lines      :", timing.vertical.scan,timing.vertical_clock.scan,"(nS)")
+    print(" Lines      :", timing.vertical.scanlines,timing.vertical_clock.scanlines,"(nS)")
     print(" Image      :", timing.y_resolution, timing.vertical_clock.image, "(nS)")
-    print(" Sync Pulse :", timing.vertical.sync, timing.vertical_clock.sync, "(nS)")
+    print(" Sync Pulse :", timing.vertical.sync_pulse, timing.vertical_clock.sync_pulse, "(nS)")
     print(" Front Porch:", timing.vertical.front_porch, timing.vertical_clock.front_porch, "(nS)")
     print(" Back Porch :", timing.vertical.back_porch, timing.vertical_clock.back_porch, "(ns)")
-    print(" Total blank:", timing.vertical.blank, timing.vertical_clock.blank, "(nS)")
+    print(" Total blank:", timing.vertical.blanking_interval, timing.vertical_clock.blanking_interval, "(nS)")
     print("Horizontal:")
     print(" Horiz. Res.:", timing.x_resolution)
-    print(" Scan       :", timing.horizontal.scan, timing.horizontal_clock.scan,"(uS)")
+    print(" Scan       :", timing.horizontal.scanline, timing.horizontal_clock.scanline,"(uS)")
     print(" Image      :", timing.horizontal.image, timing.horizontal_clock.image,"(uS)")
-    print(" Sync Pulse :", timing.horizontal.sync, timing.horizontal_clock.sync, "(uS)")
+    print(" Sync Pulse :", timing.horizontal.sync_pulse, timing.horizontal_clock.sync_pulse, "(uS)")
     print(" Front Porch:", timing.horizontal.front_porch, timing.horizontal_clock.front_porch, "(uS)")
     print(" Back Porch :", timing.horizontal.back_porch, timing.horizontal_clock.back_porch, "(us)")
-    print(" Total blank:", timing.horizontal.blank, timing.horizontal_clock.blank, "(uS)")
-    print(" Frequency  :", timing.vertical.freq, "Hz")
+    print(" Total blank:", timing.horizontal.blanking_interval, timing.horizontal_clock.blanking_interval, "(uS)")
+    print(" Frequency  :", timing.vertical.fps, "Hz")
     print("Pixel Clock: ", timing.pixel_clock)
 
 def apply(timings):
-    print(timings.y_resolution)
     vcgencmd = ['vcgencmd',hdmi_timings(timings)]
     exec=subprocess.Popen(vcgencmd)
     exec.wait()
@@ -207,7 +204,8 @@ elif args.verbose :
     verbosely(timings)
 
 if args.info : 
-    print(hdmi_timings(timings))
+    if not args.json:
+        print(hdmi_timings(timings))
 else :
     try:
         apply(timings)

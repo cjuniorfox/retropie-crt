@@ -8,6 +8,7 @@ parser.add_argument("console",help="Desired game consol")
 parser.add_argument("--pal","-P",action='store_true',help="Apply PAL settings")
 parser.add_argument("--info","-i",action='store_true',help="Only print without applyng any change")
 parser.add_argument("--verbose","-v",action='store_true',help="Detailed information")
+parser.add_argument("--json","-j",action='store_true',help="Output detailed data as JSON")
 args = parser.parse_args()
 isPal = args.pal
 info = args.info
@@ -25,6 +26,8 @@ def getcmd(width=348,ntsc_freq=59.975,pal_freq=50.01,oTop=0,oBottom=0,oLeft=0,oR
         cmd.append("-i")
     if verbose :
         cmd.append("-v")
+    if args.json :
+        cmd.append("-j")
 
     return cmd
 

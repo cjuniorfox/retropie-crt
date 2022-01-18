@@ -58,6 +58,9 @@ def atarilynx() :
 def gameboy() :
     return getcmd(width=240,ntsc_freq=59.73,oLeft=10,oRight=10)
 
+def gameboyadvanced() :
+    return getcmd(width=240,ntsc_freq=59.73,oLeft=10,oRight=10)
+
 def atari2600() :
     return getcmd(width=348,ntsc_freq=59.92,oTop=-9,oBottom=-1)
 
@@ -68,10 +71,14 @@ def atari7800() :
     return getcmd(width=348,ntsc_freq=59.92)
 
 def ngp() :
+<<<<<<< HEAD
     return getcmd(width=320,ntsc_freq=60,oLeft=10,oRight=10)
+=======
+    return getcmd(width=160,ntsc_freq=60,oLeft=8,oRight=8,oTop=8,oBottom=8)
+>>>>>>> ccc5dda9b68fbd592f79605864db5677be3371a6
 
 def n64() :
-    return getcmd(width=696,ntsc_freq=60,oLeft=10,oRight=10)
+    return getcmd(width=640,ntsc_freq=60,oLeft=10,oRight=10)
 
 def x68000() :
     return getcmd(width=1024,oLeft=10,oRight=10,ntsc_freq=59.94)
@@ -95,7 +102,7 @@ console={
     'x68000' : x68000(),
     'gb': gameboy(),
     'gbc' : gameboy(),
-    'gba' :gameboy(),
+    'gba' :gameboyadvanced(),
     'ngp' : ngp(),
     'ngpc' : ngp(),
     'atari2600': atari2600(),

@@ -83,6 +83,8 @@ def x68000() :
     return getcmd(width=1024,oLeft=10,oRight=10,ntsc_freq=59.94)
 
 console={
+    'arcade':mame_libretro(),
+    'fba':mame_libretro(),
     'megadrive':megadrive(),
     'genesis': megadrive(),
     'sega32x': megadrive(),

@@ -48,7 +48,7 @@ done
 
 #Setup emulator specific file
 core_options="${retropie_configs}/all/retroarch-core-options.cfg"
-options_to_install="${runcommand_scripts}/all/retroarch-core-options_ntsc.cfg"
+options_to_install="${runcommand_scripts}/all/retroarch-core-options.cfg"
 if [ ! -f "${core_options}" ]; then
     touch "${core_options}";
 fi

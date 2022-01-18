@@ -11,7 +11,7 @@ class Specs:
             else:
                 self.front_porch = 0.024
                 self.sync_pulse = 0.074
-                self.back_porch = 0.074 
+                self.back_porch = 0.080 
             self.blanking_interval = self.front_porch + self.back_porch + self.sync_pulse
             self.image = 1.000 - self.blanking_interval
     class Vertical:

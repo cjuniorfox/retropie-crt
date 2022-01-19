@@ -32,7 +32,7 @@ def getcmd(width=348,ntsc_freq=59.975,pal_freq=50.01,oTop=0,oBottom=0,oLeft=0,oR
     return cmd
 
 def emulationstation() :
-    return getcmd(ntsc_freq=60,pal_freq=50,oTop=8,oBottom=8,oLeft=32,oRight=32,isProgressive=False)
+    return getcmd(width=720,ntsc_freq=60,pal_freq=50,oTop=8,oBottom=8,oLeft=32,oRight=32,isProgressive=False)
 
 def megadrive() :
     return getcmd(width=1392,ntsc_freq=59.92)

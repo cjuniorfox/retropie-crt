@@ -155,7 +155,7 @@ def install_retroarch_core_options():
 parser = argparse.ArgumentParser(description="Setup the retropie-crt to made it work with some cheap chinese HDMI to YBpBr adapter")
 parser.add_argument("--pal","-P",action='store_true',help="Apply PAL settings")
 args = parser.parse_args()
-isPal = args.isPal
+isPal = args.pal
 
 if os.geteuid() != 0:
     raise PermissionError('Excuse-me, but this script must be run under root privileges.\nI appreciate if try again using \'sudo\'.\nBye for now...')

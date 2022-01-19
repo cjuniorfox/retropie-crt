@@ -31,6 +31,9 @@ def getcmd(width=348,ntsc_freq=59.975,pal_freq=50.01,oTop=0,oBottom=0,oLeft=0,oR
 
     return cmd
 
+def emulationstation() :
+    return getcmd(ntsc_freq=60,pal_freq=50,oTop=8,oBottom=8,oLeft=32,oRight=32,isProgressive=False)
+
 def megadrive() :
     return getcmd(width=1392,ntsc_freq=59.92)
 
@@ -83,6 +86,7 @@ def x68000() :
     return getcmd(width=1024,oLeft=10,oRight=10,ntsc_freq=59.94)
 
 console={
+    'emulationstation' : emulationstation(),
     'arcade':mame_libretro(),
     'fba':mame_libretro(),
     'megadrive':megadrive(),
@@ -113,10 +117,11 @@ console={
     'mame-libretro' : mame_libretro(),
     'n64' : n64(),
 }
-
 cmd = console.get(args.console)
 try: 
     exec = subprocess.Popen(cmd)
     exec.wait()
 except FileNotFoundError :
     print("Unable to execute, chvideo was not found. \n",cmd)
+except TypeError:
+    print("The settings for platform \"{}\" was not found.".format(args.console))

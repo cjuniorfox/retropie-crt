@@ -1,3 +1,4 @@
 overscan_scale=0
 hdmi_group=2
 hdmi_mode=87
+hdmi_timings=%hdmi_timings%

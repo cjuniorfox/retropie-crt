@@ -1,5 +1,5 @@
 #!/usr/bin/python3
-import json, subprocess, os, re, shutil, sys,random
+import json, subprocess, os, re, shutil, sys,random, argparse
 from subprocess import PIPE,Popen
 
 sys.tracebacklimit = 0
@@ -22,6 +22,8 @@ def print_celebrating(award):
 
 def hdmi_timings(platform):
     cmd = ['consoledisp',platform,'-i']
+    if isPal: #If PAL, setup as is
+        cmd.append('-P')
     try:
         proc = Popen(cmd,stdout=PIPE)
         proc.wait()
@@ -111,6 +113,8 @@ def install_runcommand():
 
 def get_platform_parameters(platform):
     arguments = ['consoledisp',platform,'-i','-j']
+    if(isPal): #If it's PAL, setup as is
+        arguments.append('-P')
     try:
         proc = subprocess.Popen(arguments,stdout=PIPE)
         proc.wait()
@@ -147,6 +151,11 @@ def install_retroarch_core_options():
     orig = os.path.join(resources,path)
     dest = os.path.join('/',path)
     install_cfg(orig,dest)
+
+parser = argparse.ArgumentParser(description="Setup the retropie-crt to made it work with some cheap chinese HDMI to YBpBr adapter")
+parser.add_argument("--pal","-P",action='store_true',help="Apply PAL settings")
+args = parser.parse_args()
+isPal = args.isPal
 
 if os.geteuid() != 0:
     raise PermissionError('Excuse-me, but this script must be run under root privileges.\nI appreciate if try again using \'sudo\'.\nBye for now...')

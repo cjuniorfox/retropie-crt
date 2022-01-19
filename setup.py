@@ -6,7 +6,7 @@ sys.tracebacklimit = 0
 
 def print_celebrating(award):
     #ANSI Color escape code at https://media.geeksforgeeks.org/wp-content/uploads/20201223013003/colorsandformattingsh.png
-    coloredaward = '\33[5;49;92m"%s"\33[0m' % award
+    coloredaward = '\33[1;49;92m"%s"\33[0m' % award
     celebs=[\
         'The %s was installed.',
         'Wow! The %s was installed successfully.',

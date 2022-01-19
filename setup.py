@@ -105,7 +105,9 @@ def install_chvideo_consoledisp():
     install_scripts(scripts,origin_path,dest_path)
 
 def install_runcommand():
-    scripts = ['runcommand-onstart%s.sh' % '-pal' if isPal else '','runcommand-onend.sh']
+    scripts = [
+        ['runcommand-onstart%s.sh' % '-pal' if isPal else '','runcommand-onstart.sh'],
+        'runcommand-onend.sh']
     path = os.path.join('opt','retropie','configs','all')
     origin_path = os.path.join(resources,path)
     dest_path = os.path.join('/',path)

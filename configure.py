@@ -222,7 +222,7 @@ def install():
     install_runcommand()
     install_retroarch_cfg()
     install_retroarch_core_options()
-    print("\nI finalized all steps needed to configure your Raspberry to work with CRT displays over HDMI. It's recommended turn off you Raspberry and plug then at your CRT display. Enjoy your emulator like you're playining at the original hardware.\n That's all. See ya")
+    print("\nI finalized all steps needed to configure your Raspberry for working with CRT displays over HDMI. It's recommended turn off you Raspberry and plug then at your CRT display. Enjoy your emulator like you're playining at the original hardware.\n That's all. See ya")
 
 def uninstall():
     print("Starting the uninstallation process.")

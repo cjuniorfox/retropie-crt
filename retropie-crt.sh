@@ -1,3 +1,3 @@
 #!/bin/bash
-apt update
+git pull
 bash ./menu.sh

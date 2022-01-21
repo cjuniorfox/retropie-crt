@@ -36,6 +36,6 @@
 systemName="$1"
 emuName="$2"
 
-consoledisp "${systemName}" --pal 
+consoledisp "${systemName}" --pal  2>&1>
 
 exit 0;

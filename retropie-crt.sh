@@ -1,3 +1,3 @@
 #!/bin/bash
 git pull
-bash ./menu.sh
+sudo bash ./menu.sh

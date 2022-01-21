@@ -36,10 +36,6 @@
 systemName="$1"
 emuName="$2"
 
-if [ "${systemName}" = "x68000" ]; then
-	consoledisp "${systemName}" --pal
-else
-	consoledisp "${systemName}" --pal
-	sleep 2
-fi;
+consoledisp "${systemName}" --pal 
+
 exit 0;

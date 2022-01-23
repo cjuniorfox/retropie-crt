@@ -223,7 +223,7 @@ if args.info :
         print(hdmi_timings(timings))
 else :
     try:
-        apply(timings) if is_HDMI_connected() else set_composite_mode(timings,args.pal, args.pregressive)
+        apply(timings) if is_HDMI_connected() else set_composite_mode(timings,args.pal, args.progressive)
     except FileNotFoundError :
         print("Unable to apply the settings because either vcgencmd or tvservice was not found. Are you running on Pi?")
         print("Assuming you're running only just for information, follows below. Try next time using -i --info.")

@@ -1,5 +1,6 @@
 #!/usr/bin/python3
-import math, argparse, subprocess, time
+import math, argparse, time
+from subprocess import Popen, PIPE
 
 class VerticalTiming:
     def __init__(self,verticalLines,beam):
@@ -66,7 +67,7 @@ class HorizontalTimming:
 
 class Scan :
     def __init__(self,horizPixels, pal, interlaced, freq, overscan):
-        beam = 1000;
+        beam = 1000
         lineFactor = (2 if interlaced else 1)
         self.interlaced = int(interlaced)
         #NTSC
@@ -84,18 +85,17 @@ class Scan :
 
 
 def image(horizPixels,pal,interlaced,freq,oLeft,oRight,oTop,oBottom,verbose):
-    o = Overscan(oLeft,oRight,oTop,oBottom);
+    o = Overscan(oLeft,oRight,oTop,oBottom)
     timing = Scan(horizPixels, pal, interlaced, freq, o)
 
     if verbose:
         verbosely(timing)
     
-    return timing;
+    return timing
     
 def hdmi_timings(timing):
     #If rep equals one, so rep isn't not applyable
     rep = 0 if timing.hPixels.rep == 1 else timing.hPixels.rep 
-
     strTimmings = "hdmi_timings " + str(timing.hPixels.image) + " 1 " + \
         str(round(timing.hPixels.frontPorch)) + " " + \
         str(round(timing.hPixels.sync)) + " " + \
@@ -108,7 +108,7 @@ def hdmi_timings(timing):
         str(timing.vLines.freq) + " " + \
         str(1 if timing.interlaced else 0) + " " + \
         str(timing.pixelClock) + " 1"
-    return strTimmings;
+    return strTimmings
 
 def verbosely(timing):
     print("Vertical:")
@@ -130,17 +130,32 @@ def verbosely(timing):
     print(" Frequency  :", timing.vLines.freq, "Hz")
     print("Pixel Clock: ", timing.pixelClock)
 
+def fbset(timings):
+    time.sleep(0.5)
+    Popen(['fbset','-depth', '32', '-xres',str(timings.horizPixels), '-yres',str(timings.vertPixels)])
+
 def apply(timings):
     print(timings.vertPixels)
     vcgencmd = ['vcgencmd',hdmi_timings(timings)]
-    exec=subprocess.Popen(vcgencmd)
+    exec=Popen(vcgencmd)
     exec.wait()
-    exec=subprocess.Popen(["tvservice","-e","DMT 87"])
+    exec=Popen(['tvservice','-e','DMT 87'])
     exec.wait()
-    exec=subprocess.Popen(["tvservice","-e","DMT 88"])
+    exec=Popen(['tvservice','-e','DMT 88'])
     exec.wait()
-    time.sleep(0.5)
-    subprocess.Popen(["fbset","-depth", "32", "-xres",str(timings.horizPixels), "-yres",str(timings.vertPixels)])
+    fbset(timings)
+
+def set_composite_mode(timings,isPAL,isProgressive):
+    system = 'PAL' if isPAL else 'NTSC'
+    progressive = 'P' if isProgressive else ''
+    argument = '%s 4:3 %s' % (system, progressive)
+    exec = Popen(['tvservice','-c',argument])
+    exec.wait()
+    fbset(timings)
+
+def is_HDMI_connected():
+    return 'HDMI' in str(Popen(['tvservice','-l'],stdout=PIPE).communicate()[0])
+
 
 parser = argparse.ArgumentParser(description="Switch the HDMI output resolution for SDTV friendly modes")
 parser.add_argument("--width","-w", metavar = '720',type=int, help = "Width resolution value",default=720)
@@ -172,7 +187,7 @@ if args.info :
     print(hdmi_timings(timings))
 else :
     try:
-        apply(timings)
+        apply(timings) if is_HDMI_connected() else set_composite_mode(timings,args.pal, args.pregressive)
     except FileNotFoundError :
         print("Unable to apply the settings because either vcgencmd or tvservice was not found. Are you running on Pi?")
         print("Assuming you're running only just for information, follows below. Try next time using -i --info.")

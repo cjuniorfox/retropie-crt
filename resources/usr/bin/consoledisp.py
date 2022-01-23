@@ -8,6 +8,7 @@ parser.add_argument("console",help="Desired game consol")
 parser.add_argument("--pal","-P",action='store_true',help="Apply PAL settings")
 parser.add_argument("--info","-i",action='store_true',help="Only print without applyng any change")
 parser.add_argument("--verbose","-v",action='store_true',help="Detailed information")
+parser.add_argument("--json","-j",action='store_true',help="Output detailed data as JSON")
 args = parser.parse_args()
 isPal = args.pal
 info = args.info
@@ -25,8 +26,13 @@ def getcmd(width=348,ntsc_freq=59.975,pal_freq=50.01,oTop=0,oBottom=0,oLeft=0,oR
         cmd.append("-i")
     if verbose :
         cmd.append("-v")
+    if args.json :
+        cmd.append("-j")
 
     return cmd
+
+def emulationstation() :
+    return getcmd(width=720,ntsc_freq=60,pal_freq=50,oTop=8,oBottom=8,oLeft=32,oRight=32,isProgressive=False)
 
 def megadrive() :
     return getcmd(width=1392,ntsc_freq=59.92)
@@ -80,6 +86,9 @@ def x68000() :
     return getcmd(width=1024,oLeft=10,oRight=10,ntsc_freq=59.94)
 
 console={
+    'emulationstation' : emulationstation(),
+    'arcade':mame_libretro(),
+    'fba':mame_libretro(),
     'megadrive':megadrive(),
     'genesis': megadrive(),
     'sega32x': megadrive(),
@@ -108,10 +117,11 @@ console={
     'mame-libretro' : mame_libretro(),
     'n64' : n64(),
 }
-
 cmd = console.get(args.console)
 try: 
     exec = subprocess.Popen(cmd)
     exec.wait()
 except FileNotFoundError :
     print("Unable to execute, chvideo was not found. \n",cmd)
+except TypeError:
+    print("The settings for platform \"{}\" was not found.".format(args.console))

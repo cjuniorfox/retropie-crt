@@ -53,6 +53,6 @@ Choose the most appropriate option for your needs. You have three options.
 - SDTV - PAL-EU - Enables the PAL mode, to run at 50 Hz at European television set.
 - HDTV - Unsets the the whole configuration to make the HDMI output back to default HDMI setting. Be aware this option does not uninstall the tool itself, just switch back the configuration to get back te original behavior of Raspberry's HDMI output. When this mode is set , does not plug your Raspberry PI to CRT television set, with risk of damaging the deflection circuitry if you do so.
 
-#CHANGELOG
+# CHANGELOG
 
-- Added minimal support for users for composite video mode. Now it switches between progressive and interlaced mode
+- Added minimal support for users with composite video mode.

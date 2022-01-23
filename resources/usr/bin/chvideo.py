@@ -164,7 +164,7 @@ def verbosely(timing):
 
 def fbset(timings):
     time.sleep(0.5)
-    Popen(['fbset','-depth', '32', '-xres',str(timings.horizPixels), '-yres',str(timings.vertPixels)])
+    Popen(['fbset','-depth', '32', '-xres',str(timings.x_resolution), '-yres',str(timings.y_resolution)])
 
 def apply(timings):
     vcgencmd = ['vcgencmd',hdmi_timings(timings)]

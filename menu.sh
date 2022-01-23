@@ -11,7 +11,7 @@ WIDTH=75
 CHOICE_HEIGHT=4
 BACKTITLE="github.com/cjuniorfox/retropie-crt - RetroPie CRT."
 TITLE="RetroPie CRT Setup Script"
-MENU="Version: 0.0.1 - Developed by Carlos Junior <cjuniorfox@gmail.com>"
+MENU="Version: 0.0.2 - Developed by Carlos Junior <cjuniorfox@gmail.com>"
 BACKTITLE="github.com/cjuniorfox/retropie-crt - RetroPie CRT."
 
 dialog_msg(){

@@ -1,2 +1,2 @@
 #!/bin/sh
-consoledisp emulationstation --pal
+consoledisp emulationstation --pal  2>&1> /dev/null

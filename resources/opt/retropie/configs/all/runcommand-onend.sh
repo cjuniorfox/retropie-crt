@@ -1,2 +1,2 @@
 #!/bin/sh
-consoledisp emulationstation
+consoledisp emulationstation  2>&1> /dev/null

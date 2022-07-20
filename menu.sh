@@ -15,17 +15,17 @@ MENU="Version: 0.0.2 - Developed by Carlos Junior <cjuniorfox@gmail.com>"
 BACKTITLE="github.com/cjuniorfox/retropie-crt - RetroPie CRT."
 
 dialog_msg(){
-    MSGBOX="You're about to configure the Raspberry's HDMI output to work accordingly with $1 - $2 settings.\n\
-Be aware it's maybe the Raspberry cannot be properly displayed at your HDTV using HDMI cable while the $1 mode is set.\n\n\
-I also would like to remind you that you should have in hands the bare cheap chinese HDMI to YPbPr converter buyed at Aliexpress or Banggood to run on your CRT Display.\n\n\
-If you sure about all, go ahead."
+    MSGBOX="You're just about to set up the Raspberry's HDMI output to work accordingly with $1 - $2 settings.\n\
+Be aware that maybe the Raspberry cannot be properly displayed on your High Definition TV using HDMI cable while the $1 mode is set.\n\n\
+I also would like to remind you that you should have the bare cheap Chinese HDMI to YPbPr converter bought at Aliexpress or Banggood to make your Pi for getting work on your CRT Display.\n\n\
+If you still have some doubts, ask questions at the official Github repository. if you have no doubts, feel free and go ahead."
 }
 
 success(){
     MSG="Good news! Feels like all the needed configuration has been finished with success!\n\
-Enjoy the marvelous nostalgic good games through the scanlines from the cathode ray tube.\n\
-It's a good idea shut down your Raspberry Pi and connect them to your CRT. My mission ends here.\n\n\
-Would you like to shutdown now?"
+Enjoy the marvellous nostalgic good games through the scanlines from the cathode ray tube.\n\
+It's a good idea to switch off your Raspberry Pi before connecting them to your CRT display.\n\n\
+Would you like to turn it off now?"
     dialog --clear \
         --backtitle "$BACKTITLE" \
         --title "$TITLE" \
@@ -52,9 +52,9 @@ log_stdout(){
 }
 
 failed(){
-    MSG="I don't like being bearer of such bad news, but had something wrong with the process.\n \
-Could you take a look the execution log to see what step had did wrong? \n\
-Feel free to open an issue at projects Github page.\nSorry about that!\n\n\
+    MSG="It's bad to be the bearer of such bad news, but something went wrong with the process.\n \
+Could you take a look at the execution log to see what step the whole thing went wrong? \n\
+If you believe the cause of the fail it's somehow related to some bug, feel free to open an issue on the project's Github page. \nSorry about that!\n\n\
 Would you like to take a look at the log file?"
     dialog \
         --backtitle "$BACKTITLE" \
@@ -65,7 +65,7 @@ Would you like to take a look at the log file?"
 }
 
 end_dialog(){
-    MSG="Hey dude! The installation proccess has finished with no issue reported. Would you like to look the execution's log file?"
+    MSG="Hey dude! The installation process has finished with no issue at all. Would you like to look at the execution log file?"
     dialog \
         --backtitle "$BACKTITLE" \
         --title "$TITLE" \
@@ -87,7 +87,7 @@ hdtv(){
 }
 
 pal_confirm(){
-    dialog_msg "PAL-EU" "[288p/625i@50.01Hz]"
+    dialog_msg "625 50hz (aka PAL)" "[288p/576i@50.01Hz]"
     dialog \
         --backtitle "$BACKTITLE" \
         --title "$TITLE" \
@@ -96,7 +96,7 @@ pal_confirm(){
 }
 
 ntsc_confirm(){
-    dialog_msg "NTSC/PAL-M" "[240p/480i@59.975Hz]"
+    dialog_msg "525 60Hz (aka NTSC)" "[240p/480i@59.975Hz]"
     dialog \
         --backtitle "$BACKTITLE" \
         --title "$TITLE" \
@@ -104,10 +104,9 @@ ntsc_confirm(){
         $HEIGHT $WIDTH && ntsc || menu
 }
 hdtv_confirm(){
-    msg="You're about to fade back your Raspberry to work like another regular device that outputs HDTV signal over HDMI.\n
-The scripts itself will not be uninstalled from this device, only the settings made.\n\n
-\Z1Be aware that keeping the Raspberry conected to the CRT display while HDTV mode is set can \Zbdamage\Zn\Z1 the CRT's deflection circuitry.\Zn\n\n
-If you sure, go ahead."
+    msg="I'm about to change the HDMI output settings back to default.\n\n
+\Z1Be aware that unless your CRT display should handle HDTV modes, keeping it connected while the HDTV mode it's on can harm the deflection yoke circuitry of the CRT display.\Zn\n\n
+Are you sure?"
     dialog \
         --backtitle "$BACKTITLE" \
         --title "$TITLE" \
@@ -117,8 +116,8 @@ If you sure, go ahead."
 }
 menu(){
 
-    OPTIONS=(1 "SDTV - NTSC/PAL-M (Americas/Japan)"
-             2 "SDTV - PAL-EU (Europe/Africa)"
+    OPTIONS=(1 "SDTV - 525 60Hz aka NTSC (Americas/Japan)"
+             2 "SDTV - 625 50Hz aka PAL (Europe/Asia/Africa)"
              3 "HDTV (Default)")
     CHOICE=$(dialog \
                     --backtitle "$BACKTITLE" \

@@ -1,58 +1,55 @@
 # retropie-crt
-Some scripting to enable retropie to run as 240p with some HDMI to analog adapter
-
+This project enables Raspberry Pi with Retropie to work outputting with the proper resolution, scanline configuration (progressive or interlaced) and proper pixel aspect ratio, enabling displaying to CRT display as the intended emulated game console and outputting with interlaced resolution when at the Emulationstation.
 ## Disclaimer
 
-The Raspberry Pi it's an amazing device highled customizable, and the HDMI output it's one the customizable things.
-Bundled with raspbian, the basis distribuition of retropie, it have one tool called "vcgencmd" allowing setup various parameters related to display output. The detailed tecnical things like pixel clock and sync pulse.
-The scripting at this repository was built to drive the vcgemcmd tool switching the HDMI output mathing it to the closest settings for the original emulated video game console. The mode it's switched over the fly. Meaning when you're navegating over the emulationstation options, the contend will be displayerd at 480i. Now, when you run some game, the device switchs the output matching to the target platform specs.
-What's mean, it's if you would play SNES, the display output will switch on the fly to 256x224 or 512x240. The pixel aspect ratio setting also it's changed to match the target platform. Whitout shimmering. 
+The Raspberry Pi it's an amazing device highly customizable, and the HDMI output it's one of the customizable things.
+Bundled with raspbian, the basis of the Retropie distribution, it haves a tool called "vcgencmd" allowing setting up various parameters related to display output. The detailed technical specs like pixel clock and sync pulse parameters can be customizable with that tool.
+This scripting was built to drive the "vcgemcmd" tool switching the HDMI output to match it at the closest settings for the original emulated platform as possible. The mode it's switched on the fly. Meaning that when you're browsing over the Emulationstation, the display settings will be optimized for that content, while switching the display mode for the target emulated platform when the emulation starts.
+That means, if you're emulating SNES, the display output will output as the desired settings for outputting the 256x224 or 512x240 with the proper aspect ratio, scanline mode and refresh rate. 
 
-With just an single cheap HDMI to component video converter, you'll be able run your Raspberry at CRT television set, PVM monitor or any display device with component video input to run emulated platforms at CRT closest possible as the target's original hardware behavior.
+I tested with a cheap Chinese HDMI to YPbPr converter brought from Aliexpress. I believe that other converters, like HDMI to VGA or HDMI to SCART will also work as well. Be aware that if you're wanting to use an HDMI to VGA adapter for outputting to a CRT VGA Display, the intended display must be capable of handling the 15Khz signal. In a near future, I can manage to add the 31Khz support. But currently, it's not supported.
 
-It's not tested yet, but may be possible to use with HDMI to VGA adapter or with HDMI to SCART adapter, far as that adapter doesn't do any video processing at all.
-
-The set os scripting it's composed of two major tools "chvideo.py" and "consoledisp.py".
+The set of scripting basically it's composed of two python scripts. The "chvideo.py" and "consoledisp.py".
 
 ### chvideo.py
 
-This Python script drives the "vcgencmd" to outputs the SDTV accordingly with the desired specs, like horizontal resolution, scanning type and blanking interval. It makes the whole calculation needed to make this possible.
+This script drives the "vcgencmd" for outputting the desired video mode accordingly with the desired specs, like horizontal resolution, scanline mode and refresh rate. It does the calculation needed for the intended video settings.
 
 ### consoledisp.py
 
-This one takes care to manage all customizable settings for the video game console or home computing emulated at the Raspberry PI. It drives the chvideo to switch the display mode.
+This one has all the intended modes and manages the customizable settings for the target platform emulated. Driving the "chvideo" script.
 
 ## Requiriments
 
-. Raspberry PI (Any model compatible with Retropie).
-. Retropie built flashed into Pi's SDCard.
-. HDMI to component video or HDMI to VGA converter. Aaware it needs to be simple converter without any video processing at all. Just search for "HDMI to Component" or "HDMI to VGA"  from any online chinese marketplace.
+. A Raspberry Pi. Tested at the Raspberry Pi 3. Far as the "vcgemcmd" tool exists, it should work.
+. Retropie.
+. An HDMI to analog display signal converter. Be aware that it needs to be a simple converter without any video processing. Just search for "HDMI to YPbPr" or "HDMI to VGA"  in any online Chinese store.
 ![HDMI to Component Adapter](hdmi_to_component.png)
 ## Initial setup
 
 . Enable the SSH at raspi-config as [described here](https://retropie.org.uk/docs/SSH/).
-. From the same network and from any command line tool like Terminal or CMD, copy and paste the commands below.
+. From the same network and any command-line tool like Terminal or CMD, copy and paste the commands below.
 > ssh pi@retropie 'bash <(curl -s https://raw.githubusercontent.com/cjuniorfox/retropie-crt/main/setup.sh)'
-. Type Raspberry's password if asked. The default password normally is 'raspberry'.
-. The automated tool will install all the files needed to switch between HDTV and SDTV modes from the Retropie menu option named  'RETROPIE-CRT'.
-. Your device will restart automatically. After that, you're ready to configure your Raspberry to work with your CRT Display.
+. Type the Raspberry's password if asked. The default password generally it's 'raspberry'.
+. The automated tool will install all the files needed. Then finishes, a new option will be available from the Emulationstation's Retropie option menu called 'RETROPIE-CRT'.It isn't, will be needed to restart the Emulationstation.
+. A new option will be available from the Emulationstation's Retropie option menu called 'RETROPIE-CRT'. To enable the CRT display settings, go to that option and enable the desired display mode between 625 50Hz (aka PAL), 525 60Hz (aka NTSC) or switch back to HDMI mode choosing HDTV.
 
-Attention: Don't plug in the Raspberry into the CRT display before applying the configuration with risk of harming the television's deflection circuitry if you do so.
+Important: Don't plug the Raspberry into the CRT display before applying the configuration unless knowing if your set it's capable to handle HDTV signals, with the risk of harming the set deflection circuitry if you do so.
 
-## Configuring the CRT Television mode.
+## Configuring the CRT Television modes.
 
-The configuration it's very easy and straightfoward. If it's the first time you be running the configuration, folow this step with Raspberry still conected to your HDTV. 
+At the first setup, keep your Raspberry connected to an HDTV-capable display over the HDMI and follow the steps below.
 
-.Using the gamepad, navegate to the Retropie Menu and then, you'll found an new option named "RETROPIE-CRT".
-.Open that option and one menu will shown as below.
+.With the gamepad, navigate to the Retropie Menu and then, choose "RETROPIE-CRT" options menu.
 ![Retropie-CRT menu](main_menu.png)
 
 Choose the most appropriate option for your needs. You have three options.
 
-- SDTV - NTSC/PAL-M - It's the most common option to play most of systems as if you're running at an American or Japan television set.
-- SDTV - PAL-EU - Enables the PAL mode, to run at 50 Hz at European television set.
-- HDTV - Unsets the the whole configuration to make the HDMI output back to default HDMI setting. Be aware this option does not uninstall the tool itself, just switch back the configuration to get back te original behavior of Raspberry's HDMI output. When this mode is set , does not plug your Raspberry PI to CRT television set, with risk of damaging the deflection circuitry if you do so.
+- SDTV - 525 60Hz aka NTSC (Americas/Japan) - It's the common option to play most of the systems as if you're emulating an American or Japanese set.
+- SDTV - 625 50Hz aka PAL (Europe/Asia/Africa) - Enables the PAL mode, to run at 50 Hz sets.
+- HDTV - Unsets the whole configuration and makes the HDMI behave as default. Be aware this option does not uninstall the tool itself but just switches back the configuration of Raspberry's HDMI output.
 
 # CHANGELOG
 
+- Fixes some texting
 - Added minimal support for users with composite video mode.

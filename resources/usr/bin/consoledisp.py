@@ -5,7 +5,7 @@ import subprocess
 
 parser = argparse.ArgumentParser(description="Apply settings for desired game console")
 parser.add_argument("console",help="Desired game consol")
-parser.add_argument("--pal","-P",action='store_true',help="Apply PAL settings")
+parser.add_argument("--pal","-P",action='store_true',help="Apply 625 50Hz aka PAL settings")
 parser.add_argument("--info","-i",action='store_true',help="Only print without applyng any change")
 parser.add_argument("--verbose","-v",action='store_true',help="Detailed information")
 parser.add_argument("--json","-j",action='store_true',help="Output detailed data as JSON")

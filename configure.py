@@ -9,15 +9,15 @@ def print_celebrating(award):
     coloredaward = '\33[1;49;92m"%s"\33[0m' % award
     celebs=[\
         'The %s was installed.',
-        'Wow! The %s was installed successfully.',
-        'Conquered the installation of %s like a champ!',
-        'Impressed with myself installing the %s at so graceful way.',
-        'Other scripts might be jealous, because I installed %s wonderfully well.',
-        'Proud to say that the %s was installed successfully!',
-        'Happened to have installed the %s at so graceful way that was made me fells proud of myself.',
-        'Guess what! I made it again when I was installing the %s.',
-        'Don\'t worry. I made it again, I was successful when I was installing the %s.',
-        'I\'m in paradise, because I installed %s well.']
+        'The %s was installed successfully.',
+        'Installed the %s with success',
+        'The %s was installed gracefully',
+        'The %s was installed well.',
+        'The %s was proudly installed.',
+        'Proudly the %s was installed successfully.',
+        'Managed to install the %s ok.',
+        'The %s was installed with no worries.',
+        'Wonderful, the %s was installed.']
     print(celebs[random.randint(0,len(celebs) - 1)] % coloredaward)
 
 def hdmi_timings(platform):
@@ -30,7 +30,7 @@ def hdmi_timings(platform):
         data,_ = proc.communicate()
         return data.decode('utf-8').replace('hdmi_timings ','').replace('60.0','60').replace('50.0','50')
     except:
-        raise Exception("It's embarrassing to me, but I was unable to properly run '%s'. Sorry." %  cmd[0])
+        raise Exception("It's very embarrassing, but I was unable to properly run '%s'. Sorry." %  cmd[0])
 
 def write_new_file(lines,path,celebrating=True):
     try:
@@ -41,9 +41,9 @@ def write_new_file(lines,path,celebrating=True):
             print_celebrating(path)
     except PermissionError as e:
         if e.errno == 13:
-            raise PermissionError('I having a hard time with an annoying permission error trying to write the \33[1;49;31m"%s"\33[0m., witch it\'s very awkward, because I was supposed to be running as root and a root user does all he wants.' % path)
+            raise PermissionError('I\'m having a hard time with a permission error while trying to write the \33[1;49;31m"%s"\33[0m.' % path)
         else:
-            raise PermissionError('It\'s very strange, I having some permission error trying to write the file \33[1;49;31m"%s"\33[0m. for some kind I was unable to figure out witch one is. Checks out whats the exception had to say.\n%d - %s' % (path,e.errno,e.strerror))
+            raise PermissionError('I\'m having some permission error while trying to write the file \33[1;49;31m"%s"\33[0m and, I was unable to figure out which one is. Here\'s the exception:\n%d - %s' % (path,e.errno,e.strerror))
 
 def install_cfg(config,target_path):
     if isinstance(config,str): #Maybe orig it's the path of configuration file
@@ -52,7 +52,7 @@ def install_cfg(config,target_path):
     elif isinstance(config,list): #Or maybe it's the data itself inside a list
             new_config = config
     else:
-        raise Exception("Well, it's awkward, but feels like there's some scripting error because the kind of \"orig\" field isn't right accordingly with I expected. Sorry.\nAnyway, bye for now...")
+        raise Exception("Well, it's awkward, but feels like there's some scripting error because the kind of \"orig\" field isn't right accordingly with I expected. Sorry.")
     #This outputs something like (properties1|properties2|properties)
     properties = "(%s)" % "|".join(w.split("=")[0] for w in new_config)
     #Now, its time to load the target file. But this time, just matter of read the path at destination variable and load the content into array, but excluding the options who should be updated
@@ -115,13 +115,13 @@ def install_scripts(scripts, origin_path, dest_path):
             orig = os.path.join(origin_path,script[0])
             dest = os.path.join(dest_path,script[1])
         else:
-            raise Exception('There\'s some error on script.')
+            raise Exception('There\'s some error in the script.')
         try:
             shutil.copyfile(orig,dest)
             os.chmod(dest,0o0755)
             print_celebrating(dest)
         except:
-            raise Exception('So sad! I failed miserably installing \33[1;49;31m"%s"\33[0m.\nSorry to dissapointing you!\nBye for now...' % orig)
+            raise Exception('So sad! I failed miserably installing \33[1;49;31m"%s"\33[0m.\nSorry to disappointing you!' % orig)
     print_celebrating(" , ".join(r'%s' % w[0] if isinstance(w,list) else w for w in scripts))
 
 def uninstall_scripts():
@@ -179,7 +179,7 @@ def get_platform_parameters(platform):
             scandata = json.loads(jsondata)
             return (str(scandata['x_resolution']),str(scandata['y_resolution']),str(scandata['vertical']['fps']))
     except:
-        raise Exception("Unfortunely I was unable properly to obtain parameters for the platform " + platform)
+        raise Exception("Unfortunately I was unable to properly obtain the parameters for the platform " + platform)
 
 def define_consoledisp_config(origin_cfg_path,platform):
     x,y,fps = get_platform_parameters(platform)
@@ -216,13 +216,13 @@ def install_retroarch_core_options(install = True):
         uninstall_cfg(config_path,target_path)
 
 def install():
-    print("Welcome to installation script. I'll be you host during this process. So, sit down, make a cup of tea and relax during the entire process.\n")
+    print("Welcome to the setup script. I'll be your host during this process. Sit down, make a cup of coffee and relax during the installation.\n")
     install_chvideo_consoledisp()
     install_boot_cfg()
     install_runcommand()
     install_retroarch_cfg()
     install_retroarch_core_options()
-    print("\nI finalized all steps needed to configure your Raspberry for working with CRT displays over HDMI. It's recommended turn off you Raspberry and plug then at your CRT display. Enjoy your emulator like you're playining at the original hardware.\n That's all. See ya")
+    print("\nI just finished all the needed steps to configure your Raspberry for working with CRT displays over HDMI. It's recommended turn off your Raspberry and plug then into the CRT display. Enjoy your emulator like you're playing at the original hardware.\n That's all. See ya.\n That's all. See ya")
 
 def uninstall():
     print("Starting the uninstallation process.")
@@ -230,16 +230,16 @@ def uninstall():
     install_retroarch_cfg(False)
     uninstall_boot_cfg()
     uninstall_scripts()
-    print("All settings were removed and your HDMI output it's now back to default settings. It's higly recommended turn off your Raspberry and disconnect it from your CRT display with risk of harm the deflection circuitry of your television set or monitor if you don't.")
+    print("All settings were removed and your HDMI output it's now back to the default settings. It's highly recommended to turn off your Raspberry and disconnect it from the CRT display, with a risk of harming the set's deflection circuitry if you don't.")
 
-parser = argparse.ArgumentParser(description="Setup the retropie-crt to made it work with some cheap chinese HDMI to YBpBr adapter")
-parser.add_argument("--pal","-P",action='store_true',help="Apply PAL settings")
-parser.add_argument("--uninstall",'-u', action='store_true',help="Uninstalls the settings rolling back the output default HDMI behavior")
+parser = argparse.ArgumentParser(description="Set up the retropie-crt to make it work with some cheap Chinese HDMI to YPbPr adapter")
+parser.add_argument("--pal","-P",action='store_true',help="Apply the 625 50i (aka PAL) settings")
+parser.add_argument("--uninstall",'-u', action='store_true',help="Uninstalls all the settings, rolling back the output to default HDMI behaviour")
 args = parser.parse_args()
 isPal = args.pal
 
 if os.geteuid() != 0:
-    raise PermissionError('Excuse-me, but this script must be run under root privileges.\nI appreciate if try again using \'sudo\'.\nBye for now...')
+    raise PermissionError('Excuse me, but this script must be run under root privileges.\nI appreciates it if try again using the \'sudo\' command.')
 resources = os.path.join(os.getcwd(),'resources')
 if args.uninstall:
     uninstall()

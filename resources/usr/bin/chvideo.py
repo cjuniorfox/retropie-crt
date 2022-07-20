@@ -191,7 +191,7 @@ parser = argparse.ArgumentParser(description="Switch the HDMI output resolution 
 parser.add_argument("--width","-w", metavar = '720',type=int, help = "Width resolution value",default=720)
 parser.add_argument("--frequency","-f", metavar= '59.97',type=float, help = "Refresh rate",default=0)
 parser.add_argument("--progressive","-p",action='store_true', help="Progressive 240p/288p",default=False)
-parser.add_argument("--pal","-P",action='store_true', help="PAL format", default=False)
+parser.add_argument("--pal","-P",action='store_true', help="625 50hz aka PAL format", default=False)
 parser.add_argument("--overscan-left","-L",metavar="0",type=int,help="Overscan left",default=0)
 parser.add_argument("--overscan-right","-R",metavar="0",type=int,help="Overscan right",default=0)
 parser.add_argument("--overscan-top","-T",metavar="0",type=int,help="Overscan top",default=0)

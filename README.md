@@ -30,19 +30,19 @@ This one has all the intended modes and manages the customizable settings for th
 
 ## Requiriments
 
-. A Raspberry Pi. Tested at the Raspberry Pi 3. Far as the "vcgemcmd" tool exists, it should work.
-. Retropie.
-. An HDMI to analog display signal converter. Be aware that it needs to be a simple converter without any video processing. Just search for "HDMI to YPbPr" or "HDMI to VGA"  in any online Chinese store.
+* A Raspberry Pi. Tested at the Raspberry Pi 3. Far as the "vcgemcmd" tool exists, it should work.
+* Retropie installed.
+* An HDMI to analog display signal converter. Be aware that it needs to be a simple converter without any video processing. Just search for "HDMI to YPbPr" or "HDMI to VGA"  in any online Chinese store.
 ![HDMI to Component Adapter](hdmi_to_component.png)
 
 ## Initial setup
 
-. Enable the SSH at raspi-config as [described here](https://retropie.org.uk/docs/SSH/).
-. From the same network and any command-line tool like Terminal or CMD, copy and paste the commands below.
+* Enable the SSH at raspi-config as [described here](https://retropie.org.uk/docs/SSH/).
+* From the same network and any command-line tool like Terminal or CMD, copy and paste the commands below.
 > ssh pi@retropie 'bash <(curl -s https://raw.githubusercontent.com/cjuniorfox/retropie-crt/main/setup.sh)'
-. Type the Raspberry's password if asked. The default password generally it's 'raspberry'.
-. The automated tool will install all the files needed. Then finishes, a new option will be available from the Emulationstation's Retropie option menu called 'RETROPIE-CRT'.It isn't, will be needed to restart the Emulationstation.
-. A new option will be available from the Emulationstation's Retropie option menu called 'RETROPIE-CRT'. To enable the CRT display settings, go to that option and enable the desired display mode between 625 50Hz (aka PAL), 525 60Hz (aka NTSC) or switch back to HDMI mode choosing HDTV.
+* Type the Raspberry's password if asked. The default password generally it's 'raspberry'.
+* The automated tool will install all the files needed. Then finishes, a new option will be available from the Emulationstation's Retropie option menu called 'RETROPIE-CRT'.It isn't, will be needed to restart the Emulationstation.
+* A new option will be available from the Emulationstation's Retropie option menu called 'RETROPIE-CRT'. To enable the CRT display settings, go to that option and enable the desired display mode between 625 50Hz (aka PAL), 525 60Hz (aka NTSC) or switch back to HDMI mode choosing HDTV.
 
 Important: Don't plug the Raspberry into the CRT display before applying the configuration unless knowing if your set it's capable to handle HDTV signals, with the risk of harming the set deflection circuitry if you do so.
 

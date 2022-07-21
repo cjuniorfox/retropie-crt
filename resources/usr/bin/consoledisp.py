@@ -17,7 +17,7 @@ verbose = args.verbose
 def getcmd(width=348,ntsc_freq=59.975,pal_freq=50.01,oTop=0,oBottom=0,oLeft=0,oRight=0,isProgressive=True) :
     global isPal, info, verbose
     freq = pal_freq if isPal else ntsc_freq
-    cmd = ["./chvideo.py","-w",str(width), "-f", str(freq), "-L",str(oLeft),"-R",str(oRight),"-T",str(oTop),"-B",str(oBottom)]
+    cmd = ["chvideo","-w",str(width), "-f", str(freq), "-L",str(oLeft),"-R",str(oRight),"-T",str(oTop),"-B",str(oBottom)]
     if isProgressive :
         cmd.append("-p")
     if isPal :

@@ -17,7 +17,7 @@ verbose = args.verbose
 def getcmd(width=348,ntsc_freq=59.975,pal_freq=50.01,oTop=0,oBottom=0,oLeft=0,oRight=0,isProgressive=True) :
     global isPal, info, verbose
     freq = pal_freq if isPal else ntsc_freq
-    cmd = ["chvideo","-w",str(width), "-f", str(freq), "-L",str(oLeft),"-R",str(oRight),"-T",str(oTop),"-B",str(oBottom)]
+    cmd = ["./chvideo.py","-w",str(width), "-f", str(freq), "-L",str(oLeft),"-R",str(oRight),"-T",str(oTop),"-B",str(oBottom)]
     if isProgressive :
         cmd.append("-p")
     if isPal :
@@ -41,19 +41,19 @@ def mastersystem() :
     return getcmd(width=284,ntsc_freq=59.92)
 
 def tms9918() :
-    return getcmd(width=256,ntsc_freq=59.92,oLeft=14,oRight=14,oTop=24,oBottom=24)
+    return getcmd(width=284,ntsc_freq=59.92,oTop=24,oBottom=24)
 
 def neogeo() :
     return getcmd(width=340,ntsc_freq=59.185)
 
 def nes() :
-    return getcmd(width=256,ntsc_freq=60.1,oLeft=6,oRight=6)
+    return getcmd(width=277,ntsc_freq=60.1)
 
 def snes() :
-    return getcmd(width=542,ntsc_freq=60.1,oLeft=12,oRight=12)
+    return nes()
 
 def pcengine() :
-    return getcmd(width=256,ntsc_freq=59.94,oLeft=6,oRight=6)
+    return getcmd(width=277,ntsc_freq=59.94)
 
 def mame_libretro() :
     return getcmd(width=1920,ntsc_freq=59.94,oLeft=25,oRight=25)
@@ -65,7 +65,7 @@ def gameboy() :
     return getcmd(width=240,ntsc_freq=59.73,oLeft=10,oRight=10)
 
 def gameboyadvanced() :
-    return getcmd(width=240,ntsc_freq=59.73,oLeft=10,oRight=10)
+    gameboy()
 
 def atari2600() :
     return getcmd(width=348,ntsc_freq=59.92,oTop=-9,oBottom=-1)

@@ -65,25 +65,24 @@ class Horizontal:
     def defineScanAndRep(self,image,horizontal_clock,overscan):
         max_scanline = 2048
         # Scan consists into image + back porch + front porch
-        scanline = (image + overscan.left + overscan.right) * (horizontal_clock.scanline/ (horizontal_clock.image))
+        scanline = (image + overscan.left + overscan.right) * (horizontal_clock.scanline / (horizontal_clock.image))
         self.rep = 1
         self.scanline = scanline
-        #Multiply rep until scanline superates max_scanline
+        #Multiply rep until scanline overrates max_scanline
         while self.scanline < max_scanline:
             self.rep = int(self.rep * max(self.rep,2))
             self.scanline = int(scanline * self.rep)
-        #Do one step below
+        #Do one step back
         while self.scanline > max_scanline and (self.scanline / 2) > image:
             self.rep = int(self.rep / 2)
             self.scanline = int(scanline * self.rep)
-
     def __init__(self,image,horizontal_clock,overscan):
         self.defineScanAndRep(image,horizontal_clock,overscan)
         self.image = image * self.rep
         #Overscan right at the front porch
-        self.front_porch = self.scanline * (horizontal_clock.front_porch / horizontal_clock.scanline)+(overscan.right * self.rep) 
+        self.front_porch = self.scanline * (horizontal_clock.front_porch / horizontal_clock.scanline) + (overscan.right * self.rep) 
         #Overscan left to the back porch
-        self.back_porch = self.scanline * (horizontal_clock.back_porch / horizontal_clock.scanline)+ (overscan.left * self.rep)  
+        self.back_porch = self.scanline * (horizontal_clock.back_porch / horizontal_clock.scanline) + (overscan.left * self.rep)  
         self.sync_pulse = self.scanline * (horizontal_clock.sync_pulse / horizontal_clock.scanline)
         self.blanking_interval = self.front_porch + self.back_porch + self.sync_pulse
 
@@ -115,7 +114,7 @@ class Scan :
         
 
 
-def image(x_resolution,pal,interlaced,freq,oLeft,oRight,oTop,oBottom):
+def timmings(x_resolution,pal,interlaced,freq,oLeft,oRight,oTop,oBottom):
     o = Overscan(oLeft,oRight,oTop,oBottom)
     timing = Scan(x_resolution, pal, interlaced, freq, o)
     return timing
@@ -204,7 +203,7 @@ freq = float(args.frequency)
 if freq == 0:
     freq = 59.97 if not args.pal else 50
 
-timings = image(args.width, 
+timings = timmings(args.width, 
     args.pal, 
     not args.progressive,
     freq,

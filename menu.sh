@@ -75,17 +75,17 @@ end_dialog(){
 }
 
 ntsc(){
-    dialog --infobox "Installing, please wait." 3 25
+    dialog --infobox "Installing, please wait." 3 35
     python3 ./configure.py > >(tee stdout.log) 2> >(tee stderr.log >&2) && end_dialog || failed
 }
 
 pal(){
-    dialog --infobox "Installing, please wait." 3 25
+    dialog --infobox "Installing, please wait." 3 35
     python3 ./configure.py --pal > >(tee stdout.log) 2> >(tee stderr.log >&2) && end_dialog || failed
 }
 
 hdtv(){
-    dialog --infobox "Installing, please wait." 3 25
+    dialog --infobox "Installing, please wait." 3 35
     python3 ./configure.py -u > >(tee stdout.log) 2> >(tee stderr.log >&2) && end_dialog || failed
 }
 

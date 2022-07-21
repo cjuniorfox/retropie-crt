@@ -53,7 +53,7 @@ def snes() :
     return nes()
 
 def pcengine() :
-    return getcmd(width=277,ntsc_freq=59.94)
+    return getcmd(width=282,ntsc_freq=59.94)
 
 def mame_libretro() :
     return getcmd(width=1920,ntsc_freq=59.94,oLeft=25,oRight=25)

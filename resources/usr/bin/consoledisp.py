@@ -47,13 +47,13 @@ def neogeo() :
     return getcmd(width=340,ntsc_freq=59.185)
 
 def nes() :
-    return getcmd(width=256,ntsc_freq=60.1,oLeft=10,oRight=10)
+    return getcmd(width=256,ntsc_freq=60.1,oLeft=6,oRight=6)
 
 def snes() :
-    return getcmd(width=542,ntsc_freq=60.1)
+    return getcmd(width=542,ntsc_freq=60.1,oLeft=12,oRight=12)
 
 def pcengine() :
-    return getcmd(width=256,ntsc_freq=59.94,oLeft=10,oRight=10)
+    return getcmd(width=256,ntsc_freq=59.94,oLeft=6,oRight=6)
 
 def mame_libretro() :
     return getcmd(width=1920,ntsc_freq=59.94,oLeft=25,oRight=25)

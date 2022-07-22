@@ -56,7 +56,7 @@ def pcengine() :
     return getcmd(width=282,ntsc_freq=59.94)
 
 def psx() :
-    return megadrive()
+    return getcmd(width=1280,ntsc_freq=59.94,oLeft=57,oRight=57)
 
 def mame_libretro() :
     return getcmd(width=1920,ntsc_freq=59.94,oLeft=25,oRight=25)

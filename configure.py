@@ -216,13 +216,13 @@ def install_retroarch_core_options(install = True):
         uninstall_cfg(config_path,target_path)
 
 def install():
-    print("Welcome to the setup script. I'll be your host during this process. Sit down, make a cup of coffee and relax during the installation.\n")
+    print("Welcome to the setup script. I'll be your host during this process. Sit down, make a mug of coffee and relax during the installation.\n")
     install_chvideo_consoledisp()
     install_boot_cfg()
     install_runcommand()
     install_retroarch_cfg()
     install_retroarch_core_options()
-    print("\nI just finished all the needed steps to configure your Raspberry for working with CRT displays over HDMI. It's recommended turn off your Raspberry and plug then into the CRT display. Enjoy your emulator like you're playing at the original hardware.\n That's all. See ya.\n That's all. See ya")
+    print("\nI just finished all the needed steps to configure your Raspberry for working with CRT display over HDMI. It's recommended turn off your Raspberry and plug then into the CRT display. Enjoy your emulator like you're playing at the original hardware.\n That's all. See ya")
 
 def uninstall():
     print("Starting the uninstallation process.")

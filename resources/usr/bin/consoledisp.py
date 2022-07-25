@@ -106,7 +106,7 @@ console={
     'neogeo' : neogeo(),
     'pcengine' : pcengine(),
     'psx' : psx(),
-    'psx_1' : psx_i(),
+    'psx_i' : psx_i(),
     'supergrafx' : pcengine(),
     'nes' : nes(),
     'fds' : nes(),

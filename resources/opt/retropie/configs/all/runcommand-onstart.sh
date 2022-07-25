@@ -15,25 +15,30 @@
 # $4 - the full command line used to launch the emulator.
 #
 
-#<h_active_pixels> = horizontal pixels (width)
-#<h_sync_polarity> = invert hsync polarity
-#<h_front_porch>   = horizontal forward padding from DE acitve edge
-#<h_sync_pulse>    = hsync pulse width in pixel clocks
-#<h_back_porch>    = vertical back padding from DE active edge
-#<v_active_lines>  = vertical pixels height (lines)
-#<v_sync_polarity> = invert vsync polarity
-#<v_front_porch>   = vertical forward padding from DE active edge
-#<v_sync_pulse>    = vsync pulse width in pixel clocks
-#<v_back_porch>    = vertical back padding from DE active edge
-#<v_sync_offset_a> = leave at zero
-#<v_sync_offset_b> = leave at zero
-#<pixel_rep>       = leave at zero
-#<frame_rate>      = screen refresh rate in Hz
-#<interlaced>      = leave at zero
-#<pixel_freq>      = clock frequency (width*height*framerate)
-#<aspect_ratio>    = *
+psx_dialog(){
+    OPTIONS=(1 "Progressive 240p"
+             2 "Interlaced 480i")
+    CHOICE=$(dialog \
+                    --title "Choose display mode" \
+                    3 100 2 \
+                    "${OPTIONS[@]}" \
+                    2>&1 >/dev/tty)
+    clear
+    case $CHOICE in
+            1)
+               consoledisp psx_i 2>&1> /dev/null
+                ;;
+            2)
+                consoledisp "${systemName}" 2>&1> /dev/null
+                ;;
+    esac
+}
 
 systemName="$1"
 emuName="$2"
 
-consoledisp "${systemName}" 2>&1> /dev/null
+if [[ "${systemName}" -eq "psx" ]]; then
+    psx_dialog;
+else
+    consoledisp "${systemName}" 2>&1> /dev/null
+fi;

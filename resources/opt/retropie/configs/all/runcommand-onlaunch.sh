@@ -44,6 +44,6 @@ consoledisp "${systemName}" 2>&1> /dev/null
 #if [[ "${systemName}" = "psx" ]]; then
 #    psx_dialog
 #else
-#    consoledisp "${systemName}" 2>&1
+#    consoledisp "${systemName}" 2>&1> /dev/null
 #fi;
 #*

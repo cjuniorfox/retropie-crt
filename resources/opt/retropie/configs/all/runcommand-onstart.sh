@@ -26,10 +26,10 @@ psx_dialog(){
     clear
     case $CHOICE in
             1)
-               consoledisp psx_i 2>&1> /dev/null
+               consoledisp psx 2>&1> /dev/null
                 ;;
             2)
-                consoledisp "${systemName}" 2>&1> /dev/null
+                consoledisp psx_i 2>&1> /dev/null
                 ;;
     esac
 }

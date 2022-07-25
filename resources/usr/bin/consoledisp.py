@@ -59,7 +59,7 @@ def psx() :
     return getcmd(width=1280,ntsc_freq=59.94,oLeft=57,oRight=57)
 
 def psx_i() :
-    return getcmd(witdh=1280,ntsc_freq=59.94,oLeft=57,oRight=57,isProgressive=False)
+    return getcmd(width=1280,ntsc_freq=59.94,oLeft=57,oRight=57,isProgressive=False)
 
 def mame_libretro() :
     return getcmd(width=1920,ntsc_freq=59.94,oLeft=25,oRight=25)

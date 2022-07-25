@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 #tvservice -e "DMT 87"
 #sleep 3
 #fbset -depth 8
@@ -16,29 +16,32 @@
 #
 
 psx_dialog(){
-    OPTIONS=(1 "Progressive 240p"
-             2 "Interlaced 480i")
+
+    OPTIONS=(1 "Standard Progressive (240p)"
+             2 "Hi-Res Interlaced (480i)")
     CHOICE=$(dialog \
-                    --title "Choose display mode" \
-                    3 100 2 \
+                    --title "PSX Launcher" \
+                    --menu "Choose the desired resolution" \
+                    15 75 2 \
                     "${OPTIONS[@]}" \
                     2>&1 >/dev/tty)
     clear
     case $CHOICE in
             1)
-               consoledisp psx 2>&1> /dev/null
+                consoledisp psx 2>&1
                 ;;
             2)
-                consoledisp psx_i 2>&1> /dev/null
+                consoledisp psx_i 2>&1
                 ;;
     esac
 }
 
+
 systemName="$1"
 emuName="$2"
 
-if [[ "${systemName}" -eq "psx" ]]; then
-    psx_dialog;
+if [[ "${systemName}" = "psx" ]]; then
+    psx_dialog
 else
-    consoledisp "${systemName}" 2>&1> /dev/null
+    consoledisp "${systemName}" 2>&1
 fi;

@@ -39,7 +39,7 @@ psx_dialog(){
 
 systemName="$1"
 emuName="$2"
-consoledisp "${systemName}" 2>&1 /dev/null
+consoledisp "${systemName}" 2>&1> /dev/null
 #
 #if [[ "${systemName}" = "psx" ]]; then
 #    psx_dialog

@@ -56,10 +56,10 @@ def pcengine() :
     return getcmd(width=282,ntsc_freq=59.94)
 
 def psx() :
-    return getcmd(width=1280,ntsc_freq=59.94,oLeft=57,oRight=57)
+    return getcmd(width=1280,ntsc_freq=59.94,oLeft=45,oRight=45)
 
-def psx_i() :
-    return getcmd(width=1280,ntsc_freq=59.94,oLeft=57,oRight=57,isProgressive=False)
+def psx_hires() :
+    return getcmd(width=1280,ntsc_freq=59.94,oLeft=45,oRight=45,isProgressive=False)
 
 def mame_libretro() :
     return getcmd(width=1920,ntsc_freq=59.94,oLeft=25,oRight=25)
@@ -106,7 +106,7 @@ console={
     'neogeo' : neogeo(),
     'pcengine' : pcengine(),
     'psx' : psx(),
-    'psx_i' : psx_i(),
+    'psx_hires' : psx_hires(),
     'supergrafx' : pcengine(),
     'nes' : nes(),
     'fds' : nes(),

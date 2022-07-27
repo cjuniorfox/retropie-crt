@@ -47,7 +47,7 @@ def neogeo() :
     return getcmd(width=340,ntsc_freq=59.185)
 
 def nes() :
-    return getcmd(width=277,ntsc_freq=60.1)
+    return getcmd(width=282,ntsc_freq=60.1)
 
 def snes() :
     return nes()

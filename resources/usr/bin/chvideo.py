@@ -24,7 +24,7 @@ class Specs:
                 self.sync_pulse = 3
             else:
                 self.scanlines = 262.5
-                self.resolution = 240
+                self.resolution = 244
                 self.front_porch = 3
                 self.sync_pulse = 3
         def back_porch(self):

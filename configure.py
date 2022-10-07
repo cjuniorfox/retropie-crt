@@ -132,7 +132,7 @@ def uninstall_scripts():
             },
             {
                 'path':os.path.join('/','opt','retropie','configs','all'),
-                'filenames' : ['runcommand-onstart.sh','runcommand-onend.sh']
+                'filenames' : ['runcommand-onlaunch.sh','runcommand-onend.sh']
             }
         ]
     

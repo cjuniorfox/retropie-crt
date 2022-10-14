@@ -6,5 +6,5 @@ cd retropie-crt
 git pull
 cp resources/home/pi/RetroPie/retropiemenu/retropie-crt.sh /home/pi/RetroPie/retropiemenu/retropie-crt.sh
 chmod +x /home/pi/RetroPie/retropiemenu/retropie-crt.sh
-cd /home/pi/Retropie/retropiemenu/
-sudo /home/pi/Retropie/retropiemenu/retropie-crt.sh
+cd /home/pi/RetroPie/retropiemenu/
+sudo /home/pi/RetroPie/retropiemenu/retropie-crt.sh

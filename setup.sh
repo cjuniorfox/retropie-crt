@@ -5,4 +5,4 @@ git clone https://github.com/cjuniorfox/retropie-crt.git || echo "Repository alr
 cd retropie-crt
 git pull
 cp resources/home/pi/RetroPie/retropiemenu/retropie-crt.sh /home/pi/RetroPie/retropiemenu/retropie-crt.sh
-./menu.sh
+sudo ./menu.sh

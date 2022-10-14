@@ -58,7 +58,7 @@ def install_cfg(config,target_path):
     #Now, its time to load the target file. But this time, just matter of read the path at destination variable and load the content into array, but excluding the options who should be updated
     target = []
     i = 0
-    #If the file does not exists, it creates then
+    #If the file does not exists,           creates then
     if not os.path.isfile(target_path):
         open(target_path,'a').close()
     with open(target_path) as file:
@@ -197,7 +197,7 @@ def install_retroarch_cfg(install = True):
     for platform in os.listdir(origin_dir):
         config_path = os.path.join(origin_dir,platform,'retroarch.cfg')
         target_path = os.path.join(dest_dir,platform,'retroarch.cfg')
-        if os.path.isfile(config_path):
+        if os.path.isfile(config_path) and os.path.isfile(target_path):
             if install:
                 config_orig = define_consoledisp_config(config_path,platform)
                 install_cfg(config_orig,target_path)

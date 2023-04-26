@@ -115,6 +115,9 @@ class Scan :
 
 
 def calc_timings(x_resolution,pal,interlaced,freq,oLeft,oRight,oTop,oBottom):
+    if interlaced : #If interlaced, divide the vertical resolution
+        oTop = round(oTop/2)
+        oBottom = round(oBottom/2)
     o = Overscan(oLeft,oRight,oTop,oBottom)
     timing = Scan(x_resolution, pal, interlaced, freq, o)
     return timing

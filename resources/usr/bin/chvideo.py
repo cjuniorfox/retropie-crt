@@ -114,7 +114,7 @@ class Scan :
         
 
 
-def timmings(x_resolution,pal,interlaced,freq,oLeft,oRight,oTop,oBottom):
+def calc_timings(x_resolution,pal,interlaced,freq,oLeft,oRight,oTop,oBottom):
     o = Overscan(oLeft,oRight,oTop,oBottom)
     timing = Scan(x_resolution, pal, interlaced, freq, o)
     return timing
@@ -137,9 +137,32 @@ def hdmi_timings(timing):
         str(timing.pixel_clock) + " 1"
     return strTimmings
 
-def outputjson(timming):
-    json_data = json.dumps(timming,default=lambda o: o.__dict__, indent=4)
+def outputjson(timing):
+    json_data = json.dumps(timing,default=lambda o: o.__dict__, indent=4)
     return json_data
+
+def outputmodeline(timing):
+    frq = timing.vertical.fps
+    clk = timing.pixel_clock/1000000
+    hzn = timing.horizontal.image                     #horizontal res
+    hfp = round(hzn + timing.horizontal.front_porch)  #horizonal front porch
+    hsp = round(hfp + timing.horizontal.sync_pulse)   #horizontal sync pulse
+    hbp = round(hsp + timing.horizontal.back_porch)   #horizontal back porch
+    vrc = timing.y_resolution                         #vertical res
+    vfp = vrc + timing.vertical.front_porch           #vertical front porch
+    vsp = vfp + timing.vertical.sync_pulse            #vertical sync pulse
+    vbp = vsp + timing.vertical.back_porch            #vertical back porch
+    if timing.interlaced :
+        vfp = vrc + timing.vertical.front_porch * 2
+        vsp = vfp - 1 + timing.vertical.sync_pulse * 2
+        vbp = vsp + timing.vertical.back_porch * 2
+
+    itl = "Interlace" if timing.interlaced else ""
+
+    label = "\""+ str(hzn) + "x" + str(vrc) + "_" + str(frq) + "\""
+    srtTimings = " ".join([label,str(clk),str(hzn), str(hfp), str(hsp), str(hbp), str(vrc), str(vfp), str(vsp), str(vbp),itl])
+
+    return srtTimings
 
 def verbosely(timing):
     print("Vertical:")
@@ -198,12 +221,13 @@ parser.add_argument("--overscan-bottom","-B",metavar="0",type=int,help="Overscan
 parser.add_argument("--verbose","-v",action='store_true',help="Print defailed data", default=False)
 parser.add_argument("--json","-j",action='store_true',help="Print detailed data as JSON", default=False)
 parser.add_argument("--info","-i",action='store_true',help="Only print without applyng any change",default=False)
+parser.add_argument("--x11-modeline","-m",action='store_true',help='Output X.org like modeline')
 args = parser.parse_args()
 freq = float(args.frequency)
 if freq == 0:
     freq = 59.97 if not args.pal else 50
 
-timings = timmings(args.width, 
+timings = calc_timings(args.width, 
     args.pal, 
     not args.progressive,
     freq,
@@ -217,8 +241,12 @@ if args.json :
 elif args.verbose :
     verbosely(timings)
 
+
+
 if args.info : 
-    if not args.json:
+    if args.x11_modeline :
+        print(outputmodeline(timings))
+    elif not args.json:
         print(hdmi_timings(timings))
 else :
     try:
@@ -226,4 +254,7 @@ else :
     except FileNotFoundError :
         print("Unable to apply the settings because either vcgencmd or tvservice was not found. Are you running on Pi?")
         print("Assuming you're running only just for information, follows below. Try next time using -i --info.")
-        print(hdmi_timings(timings))
+        if args.x11_modeline :
+            print(outputmodeline(timings))
+        else :
+            print(hdmi_timings(timings))

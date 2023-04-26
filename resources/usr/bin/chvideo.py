@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 import math, argparse, time,json
-from subprocess import Popen, PIPE
+from subprocess import Popen, PIPE, DEVNULL
 
 class Specs:
     class Horizontal:
@@ -63,7 +63,7 @@ class Overscan:
 
 class Horizontal:
     def defineScanAndRep(self,image,horizontal_clock,overscan):
-        max_scanline = 2048
+        max_scanline = 2304
         # Scan consists into image + back porch + front porch
         scanline = (image + overscan.left + overscan.right) * (horizontal_clock.scanline / (horizontal_clock.image))
         self.rep = 1
@@ -110,7 +110,7 @@ class Scan :
         self.horizontal = Horizontal(x_resolution,self.horizontal_clock,overscan)
         self.x_resolution = x_resolution
         self.y_resolution = self.vertical.image * y_factor
-        self.pixel_clock = int(round(self.vertical.scanlines * self.horizontal.scanline * freq))
+        self.pixel_clock = int(round(self.vertical.scanlines * self.horizontal.scanline * fps))
         
 
 
@@ -144,7 +144,7 @@ def outputjson(timing):
     json_data = json.dumps(timing,default=lambda o: o.__dict__, indent=4)
     return json_data
 
-def outputmodeline(timing):
+def modeline(timing):
     frq = timing.vertical.fps
     clk = timing.pixel_clock/1000000
     hzn = timing.horizontal.image                     #horizontal res
@@ -166,6 +166,10 @@ def outputmodeline(timing):
     srtTimings = " ".join([label,str(clk),str(hzn), str(hfp), str(hsp), str(hbp), str(vrc), str(vfp), str(vsp), str(vbp),itl])
 
     return srtTimings
+def xrandr_scale(timing):
+    vertical = 1 if timing.interlaced and timing.x_resolution >= 512 else 2
+    horizontal = 1 if timing.horizontal.rep == 1 else 1 / timing.horizontal.rep
+    return str(horizontal)+"x"+str(vertical)
 
 def verbosely(timing):
     print("Vertical:")
@@ -191,7 +195,7 @@ def fbset(timings):
     time.sleep(0.5)
     Popen(['fbset','-depth', '32', '-xres',str(timings.x_resolution), '-yres',str(timings.y_resolution)])
 
-def apply(timings):
+def apply_vcgencmd(timings):
     vcgencmd = ['vcgencmd',hdmi_timings(timings)]
     exec=Popen(vcgencmd)
     exec.wait()
@@ -200,6 +204,22 @@ def apply(timings):
     exec=Popen(['tvservice','-e','DMT 88'])
     exec.wait()
     fbset(timings)
+
+def apply_xrandr(timings, output, options):
+    modeln = modeline(timings)
+    modename = modeln.split(" ",1)[0]
+    print(options.split(" "))
+    try :
+        exec=Popen(['xrandr','--delmode',output,modename],stdout=PIPE, stderr=DEVNULL)
+        exec.wait()
+        exec=Popen(['xrandr','--rmmode',modename],stdout=PIPE, stderr=DEVNULL)
+        exec.wait()
+    finally :
+        exec=Popen(['xrandr','--newmode']+modeln.split(" "))
+        exec.wait()
+        exec=Popen(['xrandr','--addmode',output,modename])
+        exec.wait()
+        exec=Popen(['xrandr','--output',output,'--mode',modename,'--scale',xrandr_scale(timings)] + options.split(" "))
 
 def set_composite_mode(timings,isPAL,isProgressive):
     system = 'PAL' if isPAL else 'NTSC'
@@ -214,7 +234,7 @@ def is_HDMI_connected():
 
 parser = argparse.ArgumentParser(description="Switch the HDMI output resolution for SDTV friendly modes")
 parser.add_argument("--width","-w", metavar = '720',type=int, help = "Width resolution value",default=720)
-parser.add_argument("--frequency","-f", metavar= '59.97',type=float, help = "Refresh rate",default=0)
+parser.add_argument("--frequency","-f", metavar= '60',type=float, help = "Refresh rate",default=0)
 parser.add_argument("--progressive","-p",action='store_true', help="Progressive 240p/288p",default=False)
 parser.add_argument("--pal","-P",action='store_true', help="625 50hz aka PAL format", default=False)
 parser.add_argument("--overscan-left","-L",metavar="0",type=int,help="Overscan left",default=0)
@@ -225,10 +245,12 @@ parser.add_argument("--verbose","-v",action='store_true',help="Print defailed da
 parser.add_argument("--json","-j",action='store_true',help="Print detailed data as JSON", default=False)
 parser.add_argument("--info","-i",action='store_true',help="Only print without applyng any change",default=False)
 parser.add_argument("--x11-modeline","-m",action='store_true',help='Output X.org like modeline')
+parser.add_argument("--output","-o",type=str,help="Output device (only required for xrandr)",default=False)
+parser.add_argument("--x11-options","-t",type=str,help="Output options for xrandr",default=False)
 args = parser.parse_args()
 freq = float(args.frequency)
 if freq == 0:
-    freq = 59.97 if not args.pal else 50
+    freq = 60 if not args.pal else 50
 
 timings = calc_timings(args.width, 
     args.pal, 
@@ -248,16 +270,22 @@ elif args.verbose :
 
 if args.info : 
     if args.x11_modeline :
-        print(outputmodeline(timings))
+        print(modeline(timings))
     elif not args.json:
         print(hdmi_timings(timings))
 else :
     try:
-        apply(timings) if is_HDMI_connected() else set_composite_mode(timings,args.pal, args.progressive)
+        if args.x11_modeline :
+            if args.output == "":
+                print("For x11-modeline switchmode, --output parameter its needed.")
+            else :
+                apply_xrandr(timings, args.output, args.x11_options)
+        else :
+            apply_vcgencmd(timings) if is_HDMI_connected() else set_composite_mode(timings,args.pal, args.progressive)
     except FileNotFoundError :
         print("Unable to apply the settings because either vcgencmd or tvservice was not found. Are you running on Pi?")
         print("Assuming you're running only just for information, follows below. Try next time using -i --info.")
         if args.x11_modeline :
-            print(outputmodeline(timings))
+            print(modeline(timings))
         else :
             print(hdmi_timings(timings))

@@ -136,14 +136,14 @@ def hdmi_timings(timing):
     #If rep equals one, so rep isn't not applyable
     rep = 0 if timing.horizontal.rep == 1 else timing.horizontal.rep
 
-    return 'hdmi_timings {} {} {} {} {} 1  {} {:.0f} {} 0 0 {} {} {} {:.0f} 1'.format(
+    return 'hdmi_timings {} 1 {} {} {} {} 1 {} {:.0f} {} 0 0 {} {} {} {:.0f} 1'.format(
         timing.horizontal.image,
         timing.horizontal.front_porch,
         timing.horizontal.sync_pulse,
         timing.horizontal.back_porch,
         timing.y_resolution,
         timing.vertical.front_porch,
-        timing.vertical.sync_pulse if not timing.interlaced else round(timing.vertical.sync_pulse) - 1,
+        timing.vertical.sync_pulse,
         timing.vertical.back_porch,
         rep,
         timing.vertical.frequency,

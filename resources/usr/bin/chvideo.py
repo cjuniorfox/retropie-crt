@@ -1,5 +1,5 @@
 #!/usr/bin/python3
-import math, argparse, time,json
+import argparse, time,json
 from subprocess import Popen, PIPE, DEVNULL
 
 class Specs:
@@ -16,27 +16,25 @@ class Specs:
             self.blanking_interval = self.front_porch + self.back_porch + self.sync_pulse
             self.image = 1.000 - self.blanking_interval
     class Vertical:
-        def __init__(self,isPAL):
+        def __init__(self,isPAL, interlace):
             if isPAL:
-                self.scanlines = 312.5
-                self.resolution = 288
-                self.front_porch = 3
-                self.sync_pulse = 3
+                self.scanlines = 312.5 if interlace else 312
+                self.resolution = 294
             else:
-                self.scanlines = 262.5
+                self.scanlines = 262.5 if interlace else 262
                 self.resolution = 244
-                self.front_porch = 3
-                self.sync_pulse = 3
-        def back_porch(self):
-            return int(math.ceil(self.scanlines - self.resolution - self.front_porch - self.sync_pulse))
-    def __init__(self,isPAL):
-        self.vertical = Specs.Vertical(isPAL)
+            self.back_porch = 12
+            self.front_porch = 3
+            self.sync_pulse = self.scanlines - self.resolution - self.back_porch - self.front_porch
+
+    def __init__(self,isPAL, interlace):
+        self.vertical = Specs.Vertical(isPAL, interlace)
         self.horizontal = Specs.Horizontal(isPAL)
         
 
 class VerticalClock:
     def __init__(self,vertical,beam):
-        self.scanlines = beam / vertical.fps
+        self.scanlines = beam / vertical.frequency
         self.image = (self.scanlines * vertical.image)/vertical.scanlines
         self.front_porch = (self.scanlines * vertical.front_porch) / vertical.scanlines
         self.sync_pulse = (self.scanlines * vertical.sync_pulse) / vertical.scanlines
@@ -44,15 +42,16 @@ class VerticalClock:
         self.blanking_interval = self.front_porch + self.sync_pulse + self.back_porch
 
 class Vertical:
-    def __init__(self, specs, fps, overscan):
+    def __init__(self, frequency, overscan, isPAL, interlace):
+        specs = Specs(isPAL,interlace)
         self.scanlines = specs.vertical.scanlines
         self.image = specs.vertical.resolution - overscan.top - overscan.bottom
-        self.front_porch = int(specs.vertical.front_porch + overscan.bottom)
-        self.sync_pulse = int(specs.vertical.sync_pulse)
-        self.back_porch = int(math.ceil(self.scanlines - self.image - self.front_porch - self.sync_pulse))
+        self.front_porch = specs.vertical.front_porch + overscan.bottom
+        self.sync_pulse = specs.vertical.sync_pulse
+        self.back_porch = specs.vertical.back_porch + overscan.top
         self.blanking_interval = self.back_porch + self.front_porch + self.sync_pulse
-        self.fps = fps
-        self.frequency = self.fps * self.scanlines
+        self.frequency = frequency
+        self.fps = frequency if not interlace else frequency / 2
 
 class Overscan:
     def __init__(self,left,right,top,bottom):
@@ -76,20 +75,22 @@ class Horizontal:
         while self.scanline > max_scanline and (self.scanline / 2) > image:
             self.rep = int(self.rep / 2)
             self.scanline = int(scanline * self.rep)
+
     def __init__(self,image,horizontal_clock,overscan):
         self.defineScanAndRep(image,horizontal_clock,overscan)
         self.image = image * self.rep
         #Overscan right at the front porch
-        self.front_porch = self.scanline * (horizontal_clock.front_porch / horizontal_clock.scanline) + (overscan.right * self.rep) 
+        self.front_porch = round(self.scanline * (horizontal_clock.front_porch / horizontal_clock.scanline) + (overscan.right * self.rep))
+        self.sync_pulse = round(self.scanline * (horizontal_clock.sync_pulse / horizontal_clock.scanline)) 
         #Overscan left to the back porch
-        self.back_porch = self.scanline * (horizontal_clock.back_porch / horizontal_clock.scanline) + (overscan.left * self.rep)  
-        self.sync_pulse = self.scanline * (horizontal_clock.sync_pulse / horizontal_clock.scanline)
+        #self.back_porch = round(self.scanline * (horizontal_clock.back_porch / horizontal_clock.scanline) + (overscan.left * self.rep))
+        self.back_porch = self.scanline - self.image - self.front_porch - self.sync_pulse
         self.blanking_interval = self.front_porch + self.back_porch + self.sync_pulse
 
 
 class HorizontalClock:
     def __init__(self, vertical, specs, beam):
-        self.scanline = (beam / vertical.fps / vertical.scanlines) * 1000
+        self.scanline = (beam / vertical.frequency / vertical.scanlines) * 1000
         self.front_porch = self.scanline * specs.horizontal.front_porch
         self.sync_pulse = self.scanline * specs.horizontal.sync_pulse
         self.back_porch = self.scanline * specs.horizontal.back_porch
@@ -97,99 +98,110 @@ class HorizontalClock:
         self.image = self.scanline * specs.horizontal.image
 
 class Scan :
-    def __init__(self,x_resolution, isPAL, interlaced, fps, overscan):
+    def __init__(self,x_resolution, isPAL, interlaced, frequency, overscan):
         beam = 1000
-        y_factor = (2 if interlaced else 1)
+        frame_fields = (2 if interlaced else 1)
         self.interlaced = int(interlaced)
-        specs = Specs(isPAL)
-        #NTSC
-        #self.vertical = Vertical(262.5, 240, 3, 3, freq,overscan)
-        self.vertical = Vertical(specs,fps,overscan)
+        specs = Specs(isPAL, interlaced)
+        self.vertical = Vertical(frequency,overscan, isPAL, interlaced)
         self.horizontal_clock = HorizontalClock(self.vertical,specs,beam)
         self.vertical_clock = VerticalClock(self.vertical,beam)
         self.horizontal = Horizontal(x_resolution,self.horizontal_clock,overscan)
         self.x_resolution = x_resolution
-        self.y_resolution = self.vertical.image * y_factor
-        self.pixel_clock = int(round(self.vertical.scanlines * self.horizontal.scanline * fps))
+        self.y_resolution = self.vertical.image * frame_fields
+        self.pixel_clock = self.vertical.scanlines * self.horizontal.scanline * frequency
         
 
 
-def calc_timings(x_resolution,pal,interlaced,freq,oLeft,oRight,oTop,oBottom):
+def calc_overscan(left, right, top, bottom, lines, isPal, interlace) :
+    specs = Specs(isPal,interlace)
+    resolution = specs.vertical.resolution if not interlace else specs.vertical.resolution * 2
+    return Overscan(
+        left,
+        right,
+        top if lines == 0 else round((resolution - lines) / 2),
+        bottom if lines == 0 else round((resolution - lines) / 2)
+    )
+
+def calc_timings(x_resolution,pal,interlaced,freq,overscan):
     if interlaced : #If interlaced, divide the vertical resolution
-        oTop = round(oTop/2)
-        oBottom = round(oBottom/2)
-    o = Overscan(oLeft,oRight,oTop,oBottom)
-    timing = Scan(x_resolution, pal, interlaced, freq, o)
+        overscan.top = round(overscan.top/2)
+        overscan.bottom = round(overscan.bottom/2)
+    timing = Scan(x_resolution, pal, interlaced, freq, overscan)
     return timing
     
 def hdmi_timings(timing):
     #If rep equals one, so rep isn't not applyable
-    rep = 0 if timing.horizontal.rep == 1 else timing.horizontal.rep 
+    rep = 0 if timing.horizontal.rep == 1 else timing.horizontal.rep
 
-    strTimmings = "hdmi_timings " + str(timing.horizontal.image) + " 1 " + \
-        str(round(timing.horizontal.front_porch)) + " " + \
-        str(round(timing.horizontal.sync_pulse)) + " " + \
-        str(round(timing.horizontal.back_porch)) + " " + \
-        str(timing.y_resolution) + " 1 " + \
-        str(timing.vertical.front_porch) + " " +\
-        str(timing.vertical.sync_pulse) + " " + \
-        str(timing.vertical.back_porch) + " 0 0 " + \
-        str(rep) + " " + \
-        str(timing.vertical.fps) + " " + \
-        str(1 if timing.interlaced else 0) + " " + \
-        str(timing.pixel_clock) + " 1"
-    return strTimmings
+    return 'hdmi_timings {} {} {} {} {} 1  {} {:.0f} {} 0 0 {} {} {} {:.0f} 1'.format(
+        timing.horizontal.image,
+        timing.horizontal.front_porch,
+        timing.horizontal.sync_pulse,
+        timing.horizontal.back_porch,
+        timing.y_resolution,
+        timing.vertical.front_porch,
+        timing.vertical.sync_pulse if not timing.interlaced else round(timing.vertical.sync_pulse) - 1,
+        timing.vertical.back_porch,
+        rep,
+        timing.vertical.frequency,
+        1 if timing.interlaced else 0,
+        timing.pixel_clock)
 
 def outputjson(timing):
     json_data = json.dumps(timing,default=lambda o: o.__dict__, indent=4)
     return json_data
 
 def modeline(timing):
-    frq = timing.vertical.fps
+    frq = timing.vertical.frequency
     clk = timing.pixel_clock/1000000
-    hzn = timing.horizontal.image                     #horizontal res
-    hfp = round(hzn + timing.horizontal.front_porch)  #horizonal front porch
-    hsp = round(hfp + timing.horizontal.sync_pulse)   #horizontal sync pulse
-    hbp = round(hsp + timing.horizontal.back_porch)   #horizontal back porch
-    vrc = timing.y_resolution                         #vertical res
-    vfp = vrc + timing.vertical.front_porch           #vertical front porch
-    vsp = vfp + timing.vertical.sync_pulse            #vertical sync pulse
-    vbp = vsp + timing.vertical.back_porch            #vertical back porch
+    hzn = timing.horizontal.image             #horizontal res
+    hfp = hzn + timing.horizontal.front_porch #horizonal front porch
+    hsp = hfp + timing.horizontal.sync_pulse  #horizontal sync pulse
+    hbp = hsp + timing.horizontal.back_porch  #horizontal back porch
+    vrc = timing.y_resolution                 #vertical res
+    vfp = vrc + timing.vertical.front_porch   #vertical front porch
+    vsp = vfp + timing.vertical.sync_pulse    #vertical sync pulse
+    vbp = vsp + timing.vertical.back_porch    #vertical back porch
     if timing.interlaced :
         vfp = vrc + timing.vertical.front_porch * 2
-        vsp = vfp - 1 + timing.vertical.sync_pulse * 2
+        vsp = vfp + timing.vertical.sync_pulse * 2
         vbp = vsp + timing.vertical.back_porch * 2
 
     itl = "Interlace" if timing.interlaced else ""
 
-    label = "\""+ str(hzn) + "x" + str(vrc) + "_" + str(frq) + "\""
-    srtTimings = " ".join([label,str(clk),str(hzn), str(hfp), str(hsp), str(hbp), str(vrc), str(vfp), str(vsp), str(vbp),itl])
+    return " ".join(['"{:}x{:}_{:}" {:.6f} {:.0f} {:.0f} {:.0f} {:.0f} {:.0f} {:.0f} {:.0f} {:.0f}'
+                     .format(hzn,vrc,frq, clk, hzn, hfp, hsp, hbp,vrc,vfp,vsp,vbp),itl])
 
-    return srtTimings
 def xrandr_scale(timing):
     vertical = 1 if timing.interlaced and timing.x_resolution >= 512 else 2
     horizontal = 1 if timing.horizontal.rep == 1 else 1 / timing.horizontal.rep
     return str(horizontal)+"x"+str(vertical)
 
-def verbosely(timing):
-    print("Vertical:")
-    print("Vert. Res.  :", timing.y_resolution)
-    print(" Lines      :", timing.vertical.scanlines,timing.vertical_clock.scanlines,"(nS)")
-    print(" Image      :", timing.y_resolution, timing.vertical_clock.image, "(nS)")
-    print(" Sync Pulse :", timing.vertical.sync_pulse, timing.vertical_clock.sync_pulse, "(nS)")
-    print(" Front Porch:", timing.vertical.front_porch, timing.vertical_clock.front_porch, "(nS)")
-    print(" Back Porch :", timing.vertical.back_porch, timing.vertical_clock.back_porch, "(ns)")
-    print(" Total blank:", timing.vertical.blanking_interval, timing.vertical_clock.blanking_interval, "(nS)")
-    print("Horizontal:")
-    print(" Horiz. Res.:", timing.x_resolution)
-    print(" Scan       :", timing.horizontal.scanline, timing.horizontal_clock.scanline,"(uS)")
-    print(" Image      :", timing.horizontal.image, timing.horizontal_clock.image,"(uS)")
-    print(" Sync Pulse :", timing.horizontal.sync_pulse, timing.horizontal_clock.sync_pulse, "(uS)")
-    print(" Front Porch:", timing.horizontal.front_porch, timing.horizontal_clock.front_porch, "(uS)")
-    print(" Back Porch :", timing.horizontal.back_porch, timing.horizontal_clock.back_porch, "(us)")
-    print(" Total blank:", timing.horizontal.blanking_interval, timing.horizontal_clock.blanking_interval, "(uS)")
-    print(" Frequency  :", timing.vertical.fps, "Hz")
-    print("Pixel Clock: ", timing.pixel_clock)
+def verbosely(timing,pal, interlace):
+    templ_vert = '\t{:<12}: {:>8} lines - {:>6.2f} (nS)'
+    templ_horz = '\t{:<12}: {:>8} px - {:>6.2f} (uS)'
+    templ_freq = '\t{:<12}: {:>8.0f} Hz'
+    print("\nLines per field.", "Interlaced mode. Two fields per frame:" if interlace else ":")
+    print(templ_vert.format("Scanlines",timing.vertical.scanlines,timing.vertical_clock.scanlines))
+    print(templ_vert.format("Image",timing.vertical.image,timing.vertical_clock.image))
+    print(templ_vert.format("Front Porch",timing.vertical.front_porch,timing.vertical_clock.front_porch))
+    print(templ_vert.format("Sync Pulse",timing.vertical.sync_pulse,timing.vertical_clock.sync_pulse))
+    print(templ_vert.format("Back Porch",timing.vertical.back_porch,timing.vertical_clock.back_porch))
+    print(templ_vert.format("Blanking",timing.vertical.blanking_interval,timing.vertical_clock.blanking_interval))
+    print(templ_freq.format("Frequency",timing.vertical.frequency))
+    print("\nHorizontal")
+    print(templ_horz.format("Scanline",timing.horizontal.scanline,timing.horizontal_clock.scanline))
+    print(templ_horz.format("Image",timing.horizontal.image,timing.horizontal_clock.image))
+    print(templ_horz.format("Front Porch",timing.horizontal.front_porch,timing.horizontal_clock.front_porch))
+    print(templ_horz.format("Sync Pulse",timing.horizontal.sync_pulse,timing.horizontal_clock.sync_pulse))
+    print(templ_horz.format("Back Porch",timing.horizontal.back_porch,timing.horizontal_clock.back_porch))
+    print(templ_horz.format("Total blank",timing.horizontal.blanking_interval,timing.horizontal_clock.blanking_interval))
+    print(templ_freq.format("Frequency",timing.vertical.scanlines * timing.vertical.frequency))
+    print(templ_freq.format("Pixel Clock",timing.pixel_clock))
+    print("\nBroadcast  :","System-M (NTSC/PAL-M)" if not pal else "System-B/D/G/H/I/K/N (PAL-EU/SECAM)")
+    print("Resolution", timing.x_resolution,"x", timing.y_resolution)
+    print("")
 
 def fbset(timings):
     time.sleep(0.5)
@@ -232,15 +244,22 @@ def set_composite_mode(timings,isPAL,isProgressive):
 def is_HDMI_connected():
     return 'HDMI' in str(Popen(['tvservice','-l'],stdout=PIPE).communicate()[0])
 
+def set_interlace_by_resolution(lines,pal) :
+    specs = Specs(pal,True)
+    if lines > (specs.vertical.resolution + specs.vertical.back_porch) * 2:
+        raise( ValueError('Unable to set vertical resolution above {} lines'.format(lines)))
+    return args.lines > specs.vertical.resolution + specs.vertical.back_porch #Check for specs assuming interlaced as default
+
 parser = argparse.ArgumentParser(description="Switch the HDMI output resolution for SDTV friendly modes")
 parser.add_argument("--width","-w", metavar = '720',type=int, help = "Width resolution value",default=720)
+parser.add_argument("--lines", "-l", metavar = '480', type=int, help = "Height resolution value. (supress the -p value)", default=0)
 parser.add_argument("--frequency","-f", metavar= '60',type=float, help = "Refresh rate",default=0)
-parser.add_argument("--progressive","-p",action='store_true', help="Progressive 240p/288p",default=False)
-parser.add_argument("--pal","-P",action='store_true', help="625 50hz aka PAL format", default=False)
+parser.add_argument("--progressive","-p",action='store_true', help="Progressive 240p/288p. (supressed if --height is defined)",default=False)
+parser.add_argument("--pal","-P",action='store_true', help="625 lines 50hz PAL-EU/SECAM like", default=False)
 parser.add_argument("--overscan-left","-L",metavar="0",type=int,help="Overscan left",default=0)
 parser.add_argument("--overscan-right","-R",metavar="0",type=int,help="Overscan right",default=0)
-parser.add_argument("--overscan-top","-T",metavar="0",type=int,help="Overscan top",default=0)
-parser.add_argument("--overscan-bottom","-B",metavar="0",type=int,help="Overscan bottom",default=0)
+parser.add_argument("--overscan-top","-T",type=int,help="Overscan top",default=0)
+parser.add_argument("--overscan-bottom","-B",type=int,help="Overscan bottom",default=0)
 parser.add_argument("--verbose","-v",action='store_true',help="Print defailed data", default=False)
 parser.add_argument("--json","-j",action='store_true',help="Print detailed data as JSON", default=False)
 parser.add_argument("--info","-i",action='store_true',help="Only print without applyng any change",default=False)
@@ -252,19 +271,24 @@ freq = float(args.frequency)
 if freq == 0:
     freq = 60 if not args.pal else 50
 
+
+interlace = not args.progressive
+#If lines value its defined, supress the definition of -p parameter and automatically defines if its progressive or not and calculate the overscan
+if args.lines > 0 : 
+    interlace = set_interlace_by_resolution(args.lines, args.pal)
+
+overscan = calc_overscan(args.overscan_left, args.overscan_right, args.overscan_top, args.overscan_bottom, args.lines, args.pal, interlace)
+
 timings = calc_timings(args.width, 
     args.pal, 
-    not args.progressive,
+    interlace,
     freq,
-    args.overscan_left, 
-    args.overscan_right, 
-    args.overscan_top, 
-    args.overscan_bottom
+    overscan
 )
 if args.json :
     print(outputjson(timings))
 elif args.verbose :
-    verbosely(timings)
+    verbosely(timings, args.pal, interlace)
 
 
 

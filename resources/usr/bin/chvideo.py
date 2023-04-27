@@ -19,11 +19,12 @@ class Specs:
         def __init__(self,isPAL, interlace):
             if isPAL:
                 self.scanlines = 312.5 if interlace else 312
-                self.resolution = 294
+                self.resolution = 288
+                self.back_porch = 18
             else:
                 self.scanlines = 262.5 if interlace else 262
                 self.resolution = 244
-            self.back_porch = 12
+                self.back_porch = 12
             self.front_porch = 3
             self.sync_pulse = self.scanlines - self.resolution - self.back_porch - self.front_porch
 
@@ -109,6 +110,7 @@ class Scan :
         self.horizontal = Horizontal(x_resolution,self.horizontal_clock,overscan)
         self.x_resolution = x_resolution
         self.y_resolution = self.vertical.image * frame_fields
+        self.fps = self.vertical.fps
         self.pixel_clock = self.vertical.scanlines * self.horizontal.scanline * frequency
         
 
@@ -153,7 +155,7 @@ def outputjson(timing):
     return json_data
 
 def modeline(timing):
-    frq = timing.vertical.frequency
+    fps = timing.fps
     clk = timing.pixel_clock/1000000
     hzn = timing.horizontal.image             #horizontal res
     hfp = hzn + timing.horizontal.front_porch #horizonal front porch
@@ -170,8 +172,8 @@ def modeline(timing):
 
     itl = "Interlace" if timing.interlaced else ""
 
-    return " ".join(['"{:}x{:}_{:}" {:.6f} {:.0f} {:.0f} {:.0f} {:.0f} {:.0f} {:.0f} {:.0f} {:.0f}'
-                     .format(hzn,vrc,frq, clk, hzn, hfp, hsp, hbp,vrc,vfp,vsp,vbp),itl])
+    return " ".join(['"{}x{}_{:.0f}" {:.6f} {:.0f} {:.0f} {:.0f} {:.0f} {:.0f} {:.0f} {:.0f} {:.0f}'
+                     .format(hzn,vrc,fps, clk, hzn, hfp, hsp, hbp,vrc,vfp,vsp,vbp),itl])
 
 def xrandr_scale(timing):
     vertical = 1 if timing.interlaced and timing.x_resolution >= 512 else 2
@@ -199,8 +201,9 @@ def verbosely(timing,pal, interlace):
     print(templ_horz.format("Total blank",timing.horizontal.blanking_interval,timing.horizontal_clock.blanking_interval))
     print(templ_freq.format("Frequency",timing.vertical.scanlines * timing.vertical.frequency))
     print(templ_freq.format("Pixel Clock",timing.pixel_clock))
-    print("\nBroadcast  :","System-M (NTSC/PAL-M)" if not pal else "System-B/D/G/H/I/K/N (PAL-EU/SECAM)")
-    print("Resolution", timing.x_resolution,"x", timing.y_resolution)
+    print("\nBroadcast    :","System-M (NTSC/PAL-M)" if not pal else "System-B/D/G/H/I/K/N (PAL-EU/SECAM)")
+    print('Resolution   : {}x{}'.format(timing.x_resolution,timing.y_resolution))
+    print('Frames       : {:.2f}'.format(timing.fps))
     print("")
 
 def fbset(timings):
@@ -220,7 +223,6 @@ def apply_vcgencmd(timings):
 def apply_xrandr(timings, output, options):
     modeln = modeline(timings)
     modename = modeln.split(" ",1)[0]
-    print(options.split(" "))
     try :
         exec=Popen(['xrandr','--delmode',output,modename],stdout=PIPE, stderr=DEVNULL)
         exec.wait()

@@ -6,6 +6,9 @@ if [[ "$(id -u)" -ne 0 ]]; then
     exit 1
 fi
 
+cd ~/retropie-crt
+git pull
+
 HEIGHT=15
 WIDTH=75
 CHOICE_HEIGHT=4
@@ -90,7 +93,7 @@ hdtv(){
 }
 
 pal_confirm(){
-    dialog_msg "625 50hz (aka PAL)" "[288p/576i@50.01Hz]"
+    dialog_msg "B/D/G/H/I/K/N 625 50hz (PAL-EU/SECAM)" "[288p/576i@50.01Hz]"
     dialog \
         --backtitle "$BACKTITLE" \
         --title "$TITLE" \
@@ -99,7 +102,7 @@ pal_confirm(){
 }
 
 ntsc_confirm(){
-    dialog_msg "525 60Hz (aka NTSC)" "[240p/480i@59.975Hz]"
+    dialog_msg "System M 525 60Hz (PAL-M/NTSC)" "[240p/480i@59.975Hz]"
     dialog \
         --backtitle "$BACKTITLE" \
         --title "$TITLE" \

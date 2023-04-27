@@ -122,8 +122,8 @@ Are you sure?"
 }
 menu(){
 
-    OPTIONS=(1 "System M - SDTV - 525 60Hz (NTSC/PAL-M)"
-             2 "B/D/G/H/I/K/N - SDTV - 625 50Hz (PAL-EU/SECAM)"
+    OPTIONS=(1 "SDTV - 525 60Hz (NTSC/PAL-M) - CCIR System M"
+             2 "SDTV - 625 50Hz (PAL-EU/SECAM) - B/D/G/H/I/K/N"
              3 "HDTV (Default)")
     CHOICE=$(dialog \
                     --backtitle "$BACKTITLE" \

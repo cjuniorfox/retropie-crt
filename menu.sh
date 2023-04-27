@@ -6,9 +6,6 @@ if [[ "$(id -u)" -ne 0 ]]; then
     exit 1
 fi
 
-cd ~/retropie-crt
-git pull
-
 HEIGHT=15
 WIDTH=75
 CHOICE_HEIGHT=4

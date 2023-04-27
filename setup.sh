@@ -1,5 +1,5 @@
 #!/bin/sh
-cd /home/pi
+cd $HOME
 sudo apt-get update -y && sudo apt-get install git dialog -y
 git clone https://github.com/cjuniorfox/retropie-crt.git || echo "Repository already exists or could not had been cloned."
 cd retropie-crt

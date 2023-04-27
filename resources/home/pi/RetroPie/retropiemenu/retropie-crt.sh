@@ -1,3 +1,3 @@
 #!/bin/bash
-cd /home/pi/retropie-crt
+cd $HOME/retropie-crt
 bash ./retropie-crt.sh

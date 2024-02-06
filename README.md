@@ -1,10 +1,10 @@
 # retropie-crt
-This project enables Raspberry Pi with Retropie to work with the native display modes for the emulated content. It manages things like scanline configuration (progressive or interlaced), refresh rate and pixel aspect ratio.
+This project enables Raspberry Pi with Retropie to work with the native display modes for the emulated content. It manages things like scanline configuration (progressive or interlaced), refresh rate, and pixel aspect ratio.
 ## Disclaimer
 
 The Raspberry Pi it's an amazing device highly customizable.
 
-Bundled with Raspberry Pi OS, the basis of the Retropie distribution, it haves a tool called "vcgencmd" which allows customizing the video output settings in a detailed way. It's possible to set technical parameters, like sync pulse interval or pixel aspect ratio, it's allowing to represent the original behaviour of the emulated content at the intended CRT faithful as possible.
+Bundled with Raspberry Pi OS, the basis of the Retropie distribution, it has a tool called "vcgencmd" which allows customizing the video output settings in a detailed way. It's possible to set technical parameters, like sync pulse interval or pixel aspect ratio, it's allowing to represent the original behavior of the emulated content at the intended CRT faithful as possible.
 
 Those scripts manage the "vcgemcmd" tool making the needed calculations and switching modes on the fly. Meaning that when you're browsing over the Emulationstation, the display settings will be optimized for that content, displaying at a standard resolution of 640x480i at 60Hz, or 640x576 at 50Hz, if the "aka PAL settings" was enabled. While managing to have the display outputting the proper settings for the target emulated platform.
 
@@ -22,7 +22,7 @@ The set of scripting basically it's composed of two python scripts. The "chvideo
 
 ### chvideo.py
 
-This script drives the "vcgencmd" for outputting the desired video mode accordingly with the desired specs, like horizontal resolution, scanline mode and refresh rate. It does the calculation needed for the intended video settings.
+This script drives the "vcgencmd" for outputting the desired video mode accordingly with the desired specs, like horizontal resolution, scanline mode, and refresh rate. It does the calculation needed for the intended video settings.
 
 ### consoledisp.py
 
@@ -30,7 +30,7 @@ This one has all the intended modes and manages the customizable settings for th
 
 ## Requiriments
 
-* A Raspberry Pi. Tested at the Raspberry Pi 3. Far as the "vcgemcmd" tool exists, it should work.
+* A Raspberry Pi. Tested at the Raspberry Pi 3. As far as the "vcgemcmd" tool exists, it should work.
 * Retropie installed.
 * An HDMI to analog display signal converter. Be aware that it needs to be a simple converter without any video processing. Just search for "HDMI to YPbPr" or "HDMI to VGA"  in any online Chinese store.
 ![HDMI to Component Adapter](hdmi_to_component.png)
@@ -44,7 +44,7 @@ This one has all the intended modes and manages the customizable settings for th
 * The automated tool will install all the files needed. Then finishes, a new option will be available from the Emulationstation's Retropie option menu called 'RETROPIE-CRT'.It isn't, will be needed to restart the Emulationstation.
 * A new option will be available from the Emulationstation's Retropie option menu called 'RETROPIE-CRT'. To enable the CRT display settings, go to that option and enable the desired display mode between 625 50Hz (aka PAL), 525 60Hz (aka NTSC) or switch back to HDMI mode choosing HDTV.
 
-Important: Don't plug the Raspberry into the CRT display before applying the configuration unless knowing if your set it's capable to handle HDTV signals, with the risk of harming the set deflection circuitry if you do so.
+Important: Don't plug the Raspberry into the CRT display before applying the configuration unless you know your set is capable of handling HDTV signals, with the risk of harming the set deflection circuitry if you do so.
 
 ## Configuring the CRT Television modes.
 
@@ -57,7 +57,7 @@ Choose the most appropriate option for your needs. You have three options.
 
 - SDTV - 525 60Hz aka NTSC (Americas/Japan) - It's the common option to play most of the systems as if you're emulating an American or Japanese set.
 - SDTV - 625 50Hz aka PAL (Europe/Asia/Africa) - Enables the PAL mode, to run at 50 Hz sets.
-- HDTV - Unsets the whole configuration and makes the HDMI behave as default. Be aware this option does not uninstall the tool itself but just switches back the configuration of Raspberry's HDMI output.
+- HDTV - Make the HDMI behave as normal for HDTV. Be aware this option does not uninstall the tool itself but just switches back the configuration of Raspberry's HDMI output.
 
 # CHANGELOG
 

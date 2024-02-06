@@ -4,6 +4,28 @@ from subprocess import PIPE,Popen
 
 sys.tracebacklimit = 0
 
+paths = {
+    boot_cfg: {
+        path : os.path.join('boot','config.txt')
+    },
+    chvideo_consoledisp:    {
+        path : os.path.join('/','usr','bin'),
+        filenames : ['chvideo','consoledisp']
+    },
+    runcommand: {
+        path : os.path.join('/','opt','retropie','configs','all'),
+        filenames : ['runcommand-onlaunch.sh','runcommand-onend.sh']
+    },
+    retroarch_cfg : {
+        path: os.path.join('opt','retropie','configs'),
+        filename: 'retroarch.cfg'
+    },
+    retroarch_core_options : {
+        path : os.path.join('opt','retropie','configs','all'),
+        filename : 'retroarch-core-options.cfg'
+    }
+}
+
 def print_celebrating(award):
     #ANSI Color escape code at https://media.geeksforgeeks.org/wp-content/uploads/20201223013003/colorsandformattingsh.png
     coloredaward = '\33[1;49;92m"%s"\33[0m' % award
@@ -89,9 +111,8 @@ def uninstall_cfg(config_path,target_path):
     print('Uninstalled settings for \33[1;49;92m"%s"\33[0m as asked.' % target_path)
 
 def install_boot_cfg():
-    path = os.path.join('boot','config.txt')
-    config_path = os.path.join(resources,path)
-    target_path = os.path.join('/',path)
+    config_path = os.path.join(resources,paths.boot_cfg.path)
+    target_path = os.path.join('/',paths.boot_cfg.path)
     #Configurations to local array
     timings = hdmi_timings('emulationstation')
     config = []
@@ -101,9 +122,8 @@ def install_boot_cfg():
     install_cfg(config,target_path)
 
 def uninstall_boot_cfg():
-    path = os.path.join('boot','config.txt')
-    config_path = os.path.join(resources,path)
-    target_path = os.path.join('/',path)
+    config_path = os.path.join(resources,paths.boot_cfg.path)
+    target_path = os.path.join('/',paths.boot_cfg.path)
     uninstall_cfg(config_path,target_path)
 
 def install_scripts(scripts, origin_path, dest_path):   
@@ -126,14 +146,8 @@ def install_scripts(scripts, origin_path, dest_path):
 
 def uninstall_scripts():
     script_list = [
-            {
-                'path':os.path.join('/','usr','bin'),
-                'filenames' : ['chvideo','consoledisp']
-            },
-            {
-                'path':os.path.join('/','opt','retropie','configs','all'),
-                'filenames' : ['runcommand-onlaunch.sh','runcommand-onend.sh']
-            }
+            paths.chvideo_consoledisp.path,
+            paths.runcommand.path
         ]
     
     for scripts in script_list:
@@ -151,19 +165,17 @@ def install_chvideo_consoledisp():
         ['chvideo.py','chvideo'],
         ['consoledisp.py','consoledisp']
     ]
-    path = os.path.join('usr','bin')
-    origin_path = os.path.join(resources,path)
-    dest_path = os.path.join('/',path)
-    install_scripts(scripts,origin_path,dest_path)
+    origin_path = os.path.join(resources,paths.chvideo_consoledisp.path)
+    dest_path = os.path.join('/',paths.chvideo_consoledisp.path)
+    install_scripts(paths.chvideo_consoledisp.filenames,origin_path,dest_path)
 
 def install_runcommand():
     scripts = [
         ['runcommand-onlaunch%s.sh' % ('-pal' if isPal else ''),'runcommand-onlaunch.sh'],
         ['runcommand-onend%s.sh' % ('-pal' if isPal else ''),'runcommand-onend.sh']
     ]
-    path = os.path.join('opt','retropie','configs','all')
-    origin_path = os.path.join(resources,path)
-    dest_path = os.path.join('/',path)
+    origin_path = os.path.join(resources,paths.runcommand.path)
+    dest_path = os.path.join('/',paths.runcommand.path)
     install_scripts(scripts,origin_path, dest_path)
 
 def get_platform_parameters(platform):
@@ -191,12 +203,11 @@ def define_consoledisp_config(origin_cfg_path,platform):
     
 
 def install_retroarch_cfg(install = True):
-    path = os.path.join('opt','retropie','configs')
-    origin_dir = os.path.join(resources,path)
-    dest_dir = os.path.join('/',path)
+    origin_dir = os.path.join(resources,paths.retroarch_cfg.path)
+    dest_dir = os.path.join('/',paths.retroarch_cfg.path)
     for platform in os.listdir(origin_dir):
-        config_path = os.path.join(origin_dir,platform,'retroarch.cfg')
-        target_path = os.path.join(dest_dir,platform,'retroarch.cfg')
+        config_path = os.path.join(origin_dir,platform,paths.retroarch_cfg.filename)
+        target_path = os.path.join(dest_dir,platform,paths.retroarch_cfg.filename)
         if os.path.isfile(config_path) and os.path.isfile(target_path):
             if install:
                 config_orig = define_consoledisp_config(config_path,platform)
@@ -205,11 +216,10 @@ def install_retroarch_cfg(install = True):
                 uninstall_cfg(config_path,target_path)
 
 def install_retroarch_core_options(install = True):
-    path = os.path.join('opt','retropie','configs','all')
+    
     config_filename = 'retroarch-core-options%s.cfg' % ('-pal' if isPal else '')
-    target_filename = 'retroarch-core-options.cfg'
-    config_path = os.path.join(resources,path,config_filename)
-    target_path = os.path.join('/',path,target_filename)
+    config_path = os.path.join(resources,paths.retroarch_core_options.path,config_filename)
+    target_path = os.path.join('/',paths.retroarch_core_options.path,paths.retroarch_core_options.filename)
     if install:
         install_cfg(config_path,target_path)
     else:

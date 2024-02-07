@@ -14,11 +14,19 @@ isPal = args.pal
 info = args.info
 verbose = args.verbose
 
-def getcmd(width=348,ntsc_freq=59.975,pal_freq=50.01,oTop=0,oBottom=0,oLeft=0,oRight=0,isProgressive=True) :
+def getcmd(width=348,ntsc_freq=59.975,pal_freq=50.01,overscan_top=0,overscan_bottom=0,overscan_left=0,overscan_right=0,is_progressive=True) :
     global isPal, info, verbose
     freq = pal_freq if isPal else ntsc_freq
-    cmd = ["chvideo","-w",str(width), "-f", str(freq), "-L",str(oLeft),"-R",str(oRight),"-T",str(oTop),"-B",str(oBottom)]
-    if isProgressive :
+    cmd = [
+        "chvideo",
+        "-w",str(width),
+        "-f", str(freq),
+        "-L",str(overscan_left),
+        "-R",str(overscan_right),
+        "-T",str(overscan_top),
+        "-B",str(overscan_bottom)
+    ]
+    if is_progressive :
         cmd.append("-p")
     if isPal :
         cmd.append("-P")
@@ -32,7 +40,7 @@ def getcmd(width=348,ntsc_freq=59.975,pal_freq=50.01,oTop=0,oBottom=0,oLeft=0,oR
     return cmd
 
 def emulationstation() :
-    return getcmd(width=720,ntsc_freq=60,pal_freq=50,oTop=8,oBottom=8,oLeft=32,oRight=32,isProgressive=False)
+    return getcmd(width=720,ntsc_freq=60,pal_freq=50,overscan_top=8,overscan_bottom=8,overscan_left=32,overscan_right=32,is_progressive=False)
 
 def megadrive() :
     return getcmd(width=1392,ntsc_freq=59.92)
@@ -41,7 +49,7 @@ def mastersystem() :
     return getcmd(width=284,ntsc_freq=59.92)
 
 def tms9918() :
-    return getcmd(width=284,ntsc_freq=59.92,oTop=24,oBottom=24)
+    return getcmd(width=284,ntsc_freq=59.92,overscan_top=24,overscan_bottom=24)
 
 def neogeo() :
     return getcmd(width=340,ntsc_freq=59.185)
@@ -56,40 +64,40 @@ def pcengine() :
     return getcmd(width=282,ntsc_freq=59.94)
 
 def psx() :
-    return getcmd(width=1280,ntsc_freq=59.94,oLeft=45,oRight=45)
+    return getcmd(width=1280,ntsc_freq=59.94,overscan_left=45,overscan_right=45)
 
 def psx_hires() :
-    return getcmd(width=1280,ntsc_freq=59.94,oLeft=45,oRight=45,isProgressive=False)
+    return getcmd(width=1280,ntsc_freq=59.94,overscan_left=45,overscan_right=45,is_progressive=False)
 
 def mame_libretro() :
-    return getcmd(width=1920,ntsc_freq=59.94,oLeft=25,oRight=25)
+    return getcmd(width=1920,ntsc_freq=59.94,overscan_left=25,overscan_right=25)
 
 def atarilynx() :
     return getcmd(width=348,ntsc_freq=59.94)
 
 def gameboy() :
-    return getcmd(width=240,ntsc_freq=59.73,oLeft=10,oRight=10)
+    return getcmd(width=240,ntsc_freq=59.73,overscan_left=10,overscan_right=10)
 
 def gameboyadvanced() :
     return gameboy()
 
 def atari2600() :
-    return getcmd(width=348,ntsc_freq=59.92,oTop=-9,oBottom=-1)
+    return getcmd(width=348,ntsc_freq=59.92,overscan_top=-9,overscan_bottom=-1)
 
 def atari800() :
-    return getcmd(width=336,ntsc_freq=59.922745,oLeft=16,oRight=16)
+    return getcmd(width=336,ntsc_freq=59.922745,overscan_left=16,overscan_right=16)
 
 def atari7800() :
     return getcmd(width=348,ntsc_freq=59.92)
 
 def ngp() :
-    return getcmd(width=160,ntsc_freq=60,oLeft=8,oRight=8,oTop=8,oBottom=8)
+    return getcmd(width=160,ntsc_freq=60,overscan_left=8,overscan_right=8,overscan_top=8,overscan_bottom=8)
 
 def n64() :
-    return getcmd(width=640,ntsc_freq=60,oLeft=10,oRight=10)
+    return getcmd(width=640,ntsc_freq=60,overscan_left=10,overscan_right=10)
 
 def x68000() :
-    return getcmd(width=1024,oLeft=10,oRight=10,ntsc_freq=59.94)
+    return getcmd(width=1024,overscan_left=10,overscan_right=10,ntsc_freq=59.94)
 
 console={
     'emulationstation' : emulationstation(),

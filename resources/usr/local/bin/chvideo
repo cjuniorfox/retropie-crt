@@ -1,5 +1,5 @@
 #!/usr/bin/python3
-import argparse, time,json
+import os, argparse, time, json
 from subprocess import Popen, PIPE, DEVNULL
 
 class Specs:

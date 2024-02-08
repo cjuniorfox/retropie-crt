@@ -62,23 +62,24 @@ class Overscan:
         self.bottom = bottom
 
 class Horizontal:
-    def define_scan_and_rep(self,image,horizontal_clock,overscan):
+    def define_scan_and_rep(self,image,horizontal_clock,overscan,multiply_rep = True):
         max_scanline = 2304
         # Scan consists into image + back porch + front porch
         scanline = (image + overscan.left + overscan.right) * (horizontal_clock.scanline / (horizontal_clock.image))
         self.rep = 1
         self.scanline = scanline
         #Multiply rep until scanline overrates max_scanline
-        while self.scanline < max_scanline:
-            self.rep = int(self.rep * max(self.rep,2))
-            self.scanline = int(scanline * self.rep)
-        #Do one step back
-        while self.scanline > max_scanline and (self.scanline / 2) > image:
-            self.rep = int(self.rep / 2)
-            self.scanline = int(scanline * self.rep)
+        if multiply_rep:
+            while self.scanline < max_scanline:
+                self.rep = int(self.rep * max(self.rep,2))
+                self.scanline = int(scanline * self.rep)
+            #Do one step back
+            while self.scanline > max_scanline and (self.scanline / 2) > image:
+                self.rep = int(self.rep / 2)
+                self.scanline = int(scanline * self.rep)
 
-    def __init__(self,image,horizontal_clock,overscan):
-        self.define_scan_and_rep(image,horizontal_clock,overscan)
+    def __init__(self,image,horizontal_clock,overscan,rep):
+        self.define_scan_and_rep(image,horizontal_clock,overscan,rep)
         self.image = image * self.rep
         #Overscan right at the front porch
         self.front_porch = round(self.scanline * (horizontal_clock.front_porch / horizontal_clock.scanline) + (overscan.right * self.rep))
@@ -99,7 +100,7 @@ class HorizontalClock:
         self.image = self.scanline * specs.horizontal.image
 
 class Scan :
-    def __init__(self,x_resolution, is_pal, interlaced, frequency, overscan):
+    def __init__(self,x_resolution, is_pal, interlaced, frequency, overscan,rep):
         beam = 1000
         frame_fields = (2 if interlaced else 1)
         self.interlaced = int(interlaced)
@@ -107,7 +108,7 @@ class Scan :
         self.vertical = Vertical(frequency,overscan, is_pal, interlaced)
         self.horizontal_clock = HorizontalClock(self.vertical,specs,beam)
         self.vertical_clock = VerticalClock(self.vertical,beam)
-        self.horizontal = Horizontal(x_resolution,self.horizontal_clock,overscan)
+        self.horizontal = Horizontal(x_resolution,self.horizontal_clock,overscan,rep)
         self.x_resolution = x_resolution
         self.y_resolution = self.vertical.image * frame_fields
         self.fps = self.vertical.fps
@@ -125,11 +126,11 @@ def calc_overscan(left, right, top, bottom, lines, is_pal, interlace) :
         bottom if lines == 0 else round((resolution - lines) / 2)
     )
 
-def calc_timings(x_resolution,pal,interlaced,freq,overscan):
+def calc_timings(x_resolution,pal,interlaced,freq,overscan,rep):
     if interlaced : #If interlaced, divide the vertical resolution
         overscan.top = round(overscan.top/2)
         overscan.bottom = round(overscan.bottom/2)
-    timing = Scan(x_resolution, pal, interlaced, freq, overscan)
+    timing = Scan(x_resolution, pal, interlaced, freq, overscan,rep)
     return timing
     
 def hdmi_timings(timing):
@@ -169,11 +170,12 @@ def modeline(timing):
         vfp = vrc + timing.vertical.front_porch * 2
         vsp = vfp + timing.vertical.sync_pulse * 2
         vbp = vsp + timing.vertical.back_porch * 2
-
+    hsy = "+HSync"
+    vsy = "-VSync"
     itl = "Interlace" if timing.interlaced else ""
 
     return " ".join(['"{}x{}_{:.0f}" {:.6f} {:.0f} {:.0f} {:.0f} {:.0f} {:.0f} {:.0f} {:.0f} {:.0f}'
-                     .format(hzn,vrc,fps, clk, hzn, hfp, hsp, hbp,vrc,vfp,vsp,vbp),itl])
+                     .format(hzn,vrc,fps, clk, hzn, hfp, hsp, hbp,vrc,vfp,vsp,vbp),hsy,vsy,itl])
 
 def xrandr_scale(timing):
     vertical = 1 if timing.interlaced and timing.x_resolution >= 512 else 2
@@ -234,7 +236,10 @@ def apply_xrandr(timings, output, options):
         _exec.wait()
         _exec=Popen([xrandr,'--addmode',output,modename])
         _exec.wait()
-        _exec=Popen([xrandr,'--output',output,'--mode',modename,'--scale',xrandr_scale(timings)] + options.split(" "))
+        output = [xrandr,'--output',output,'--mode',modename,'--scale',xrandr_scale(timings)]
+        if isinstance(options, str):
+            output = output + options.split(" ")
+        _exec=Popen(output)
 
 def set_composite_mode(timings,is_pal,is_progressive):
     system = 'PAL' if is_pal else 'NTSC'
@@ -259,6 +264,7 @@ parser.add_argument("--width","-w", metavar = '720',type=int, help = "Width reso
 parser.add_argument("--lines", "-l", metavar = '480', type=int, help = "Height resolution value. (supress the -p value)", default=0)
 parser.add_argument("--frequency","-f", metavar= '60',type=float, help = "Refresh rate",default=0)
 parser.add_argument("--progressive","-p",action='store_true', help="Progressive 240p/288p. (supressed if --height is defined)",default=False)
+parser.add_argument("--no-rep","-r",action='store_true', help="Disables Rep. Rep Multiplies pixel clock for fine-tuning the back porch and front porch")
 parser.add_argument("--pal","-P",action='store_true', help="625 lines 50hz PAL-EU/SECAM like", default=False)
 parser.add_argument("--overscan-left","-L",metavar="0",type=int,help="Overscan left",default=0)
 parser.add_argument("--overscan-right","-R",metavar="0",type=int,help="Overscan right",default=0)
@@ -287,7 +293,8 @@ timings = calc_timings(args.width,
     args.pal, 
     interlace,
     freq,
-    overscan
+    overscan,
+    not args.no_rep
 )
 if args.json :
     print(outputjson(timings))

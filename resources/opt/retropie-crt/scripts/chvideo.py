@@ -277,7 +277,6 @@ def is_hdmi_connected():
 
 def calc_lines(lines,pal,interlaced) :
     specs = Specs(pal,interlaced)
-    print(specs.vertical.resolution)
     if lines == 0 : 
         return specs.vertical.resolution
     return adjust_number_within_range(lines,80,specs.vertical.resolution)

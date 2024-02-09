@@ -1,16 +1,24 @@
 #!/usr/bin/python3
 import json, subprocess, os, re, shutil, sys,random, argparse
 from subprocess import PIPE,Popen
+from pathlib import Path
 
-sys.tracebacklimit = 1
+sys.tracebacklimit = 0
 
 paths = {
+    'retropie-crt': {
+        'path': os.path.join('opt','retropie-crt')
+    },
     'boot_cfg': {
         'path': os.path.join('boot', 'config.txt')
     },
     'chvideo_consoledisp': {
+        'path': os.path.join('opt', 'retropie-crt', 'scripts'),
+        'filenames': ['chvideo.py', 'consoledisp.py','chvideocore.py']
+    },
+    'chvideo_consoledisp_symlinks': {
         'path': os.path.join('usr', 'local', 'bin'),
-        'filenames': ['chvideo', 'consoledisp']
+        'filenames': ['chvideo', 'consoledisp','chvideocore']
     },
     'runcommand': {
         'path': os.path.join('opt', 'retropie', 'configs', 'all'),
@@ -74,31 +82,26 @@ def write_new_file(lines,path,celebrating=True):
             raise PermissionError('I\'m having some permission error while trying to write the file \33[1;49;31m"%s"\33[0m and, I was unable to figure out which one is. Here\'s the exception:\n%d - %s' % (path,e.errno,e.strerror))
 
 def install_cfg(config,target_path):
-    if isinstance(config,str): #Maybe orig it's the path of configuration file
+    if isinstance(config,str):
         with open(config) as file:
             new_config = file.readlines()
-    elif isinstance(config,list): #Or maybe it's the data itself inside a list
+    elif isinstance(config,list): 
             new_config = config
-    #This outputs something like (properties1|properties2|properties)
     properties = "(%s)" % "|".join(w.split("=")[0] for w in new_config)
-    #Now, its time to load the target file. But this time, just matter of read the path at destination variable and load the content into array, but excluding the options who should be updated
     target = []
     i = 0
-    #If the file does not exists,           creates then
     if not os.path.isfile(target_path):
         open(target_path,'a').close()
     with open(target_path) as file:
         for line in file:
             if not re.search(properties,line):
                 target.append(line)
-            elif i < len(new_config): #Try to add the same setting at same place as the one left of
+            elif i < len(new_config): 
                 target.append(new_config[i])
                 i+=1
-    #If all desired settings were not applyed yet, fill the rest of file with remaining settings
     while i < len(new_config):
         target.append(new_config[i])
         i+=1
-    #Now it's time to merge the two configuration arrays into one
     write_new_file(target,target_path)
     
 def uninstall_cfg(config_path,target_path):
@@ -130,6 +133,9 @@ def uninstall_boot_cfg():
 
 def install_scripts(scripts, origin_path, dest_path):   
     for script in scripts:
+        directory = Path(dest_path)
+        if not directory.exists():
+            directory.mkdir(parents=True)
         if isinstance(script,str):
             orig = os.path.join(origin_path,script)
             dest = os.path.join(dest_path,script)
@@ -144,9 +150,13 @@ def install_scripts(scripts, origin_path, dest_path):
             raise FileNotFoundError('So sad! I failed miserably installing \33[1;49;31m"%s"\33[0m.\nSorry to disappointing you!' % orig)
     print_celebrating(" , ".join(r'%s' % w[0] if isinstance(w,list) else w for w in scripts))
 
+def uninstall_directory():
+    shutil.rmtree(os.path.join(target_path(paths['retropie-crt']['path'])))
+
 def uninstall_scripts():
     script_list = [
             paths['chvideo_consoledisp'],
+            paths['chvideo_consoledisp_symlinks'],
             paths['runcommand']
         ]
     
@@ -160,11 +170,14 @@ def uninstall_scripts():
                 raise PermissionError('Permission error when removing \33[1;49;31m"%s"\33[0m. %s' % (path,e.strerror))
             except FileNotFoundError as e:
                 raise FileNotFoundError('The file does not exist: \33[1;49;31m"%s"\33[0m. %s' % (path,e.strerror))
+    uninstall_directory()
 
 
 def install_chvideo_consoledisp():
     path = paths['chvideo_consoledisp']['path']
     install_scripts(paths['chvideo_consoledisp']['filenames'],origin_path(path),target_path(path))
+    path = paths['chvideo_consoledisp_symlinks']['path']
+    install_scripts(paths['chvideo_consoledisp_symlinks']['filenames'],origin_path(path),target_path(path))
 
 def install_runcommand():
     scripts = [

@@ -1,8 +1,44 @@
 #!/usr/bin/python3
 import json, subprocess, os, re, shutil, sys,random, argparse
 from subprocess import PIPE,Popen
+from pathlib import Path
 
 sys.tracebacklimit = 0
+
+paths = {
+    'retropie-crt': {
+        'path': os.path.join('opt','retropie-crt')
+    },
+    'boot_cfg': {
+        'path': os.path.join('boot', 'config.txt')
+    },
+    'chvideo_consoledisp': {
+        'path': os.path.join('opt', 'retropie-crt', 'scripts'),
+        'filenames': ['chvideo.py', 'consoledisp.py','chvideocore.py']
+    },
+    'chvideo_consoledisp_symlinks': {
+        'path': os.path.join('usr', 'local', 'bin'),
+        'filenames': ['chvideo', 'consoledisp','chvideocore']
+    },
+    'runcommand': {
+        'path': os.path.join('opt', 'retropie', 'configs', 'all'),
+        'filenames': ['runcommand-onlaunch.sh', 'runcommand-onend.sh']
+    },
+    'retroarch_cfg': {
+        'path': os.path.join('opt', 'retropie', 'configs'),
+        'filename': 'retroarch.cfg'
+    },
+    'retroarch_core_options': {
+        'path': os.path.join('opt', 'retropie', 'configs', 'all'),
+        'filename':'retroarch-core-options%s.cfg'
+    }
+}
+
+def origin_path(path):
+    return os.path.join(resources,path)
+
+def target_path(path):
+    return os.path.join('/',path)
 
 def print_celebrating(award):
     #ANSI Color escape code at https://media.geeksforgeeks.org/wp-content/uploads/20201223013003/colorsandformattingsh.png
@@ -29,8 +65,8 @@ def hdmi_timings(platform):
         proc.wait()
         data,_ = proc.communicate()
         return data.decode('utf-8').replace('hdmi_timings ','').replace('60.0','60').replace('50.0','50')
-    except:
-        raise Exception("It's very embarrassing, but I was unable to properly run '%s'. Sorry." %  cmd[0])
+    except FileNotFoundError:
+        raise FileNotFoundError("It's very embarrassing, but I was unable to properly run '%s'. Sorry." %  cmd[0])
 
 def write_new_file(lines,path,celebrating=True):
     try:
@@ -46,33 +82,26 @@ def write_new_file(lines,path,celebrating=True):
             raise PermissionError('I\'m having some permission error while trying to write the file \33[1;49;31m"%s"\33[0m and, I was unable to figure out which one is. Here\'s the exception:\n%d - %s' % (path,e.errno,e.strerror))
 
 def install_cfg(config,target_path):
-    if isinstance(config,str): #Maybe orig it's the path of configuration file
+    if isinstance(config,str):
         with open(config) as file:
             new_config = file.readlines()
-    elif isinstance(config,list): #Or maybe it's the data itself inside a list
+    elif isinstance(config,list): 
             new_config = config
-    else:
-        raise Exception("Well, it's awkward, but feels like there's some scripting error because the kind of \"orig\" field isn't right accordingly with I expected. Sorry.")
-    #This outputs something like (properties1|properties2|properties)
     properties = "(%s)" % "|".join(w.split("=")[0] for w in new_config)
-    #Now, its time to load the target file. But this time, just matter of read the path at destination variable and load the content into array, but excluding the options who should be updated
     target = []
     i = 0
-    #If the file does not exists,           creates then
     if not os.path.isfile(target_path):
         open(target_path,'a').close()
     with open(target_path) as file:
         for line in file:
             if not re.search(properties,line):
                 target.append(line)
-            elif i < len(new_config): #Try to add the same setting at same place as the one left of
+            elif i < len(new_config): 
                 target.append(new_config[i])
                 i+=1
-    #If all desired settings were not applyed yet, fill the rest of file with remaining settings
     while i < len(new_config):
         target.append(new_config[i])
         i+=1
-    #Now it's time to merge the two configuration arrays into one
     write_new_file(target,target_path)
     
 def uninstall_cfg(config_path,target_path):
@@ -89,82 +118,74 @@ def uninstall_cfg(config_path,target_path):
     print('Uninstalled settings for \33[1;49;92m"%s"\33[0m as asked.' % target_path)
 
 def install_boot_cfg():
-    path = os.path.join('boot','config.txt')
-    config_path = os.path.join(resources,path)
-    target_path = os.path.join('/',path)
+    path = paths['boot_cfg']['path']
     #Configurations to local array
     timings = hdmi_timings('emulationstation')
     config = []
-    with open(config_path) as file:
+    with open(origin_path(path)) as file:
         for line in file:
             config.append(line.replace('%hdmi_timings%',timings))
-    install_cfg(config,target_path)
+    install_cfg(config,target_path(path))
 
 def uninstall_boot_cfg():
-    path = os.path.join('boot','config.txt')
-    config_path = os.path.join(resources,path)
-    target_path = os.path.join('/',path)
-    uninstall_cfg(config_path,target_path)
+    path = paths['boot_cfg']['path'];
+    uninstall_cfg(origin_path(path),target_path(path))
 
 def install_scripts(scripts, origin_path, dest_path):   
     for script in scripts:
+        directory = Path(dest_path)
+        if not directory.exists():
+            directory.mkdir(parents=True)
         if isinstance(script,str):
             orig = os.path.join(origin_path,script)
             dest = os.path.join(dest_path,script)
         elif isinstance(script,list) and isinstance(script[0],str) and isinstance(script[1],str):
             orig = os.path.join(origin_path,script[0])
             dest = os.path.join(dest_path,script[1])
-        else:
-            raise Exception('There\'s some error in the script.')
         try:
             shutil.copyfile(orig,dest)
             os.chmod(dest,0o0755)
             print_celebrating(dest)
-        except:
-            raise Exception('So sad! I failed miserably installing \33[1;49;31m"%s"\33[0m.\nSorry to disappointing you!' % orig)
+        except FileNotFoundError:
+            raise FileNotFoundError('So sad! I failed miserably installing \33[1;49;31m"%s"\33[0m.\nSorry to disappointing you!' % orig)
     print_celebrating(" , ".join(r'%s' % w[0] if isinstance(w,list) else w for w in scripts))
+
+def uninstall_directory():
+    shutil.rmtree(os.path.join(target_path(paths['retropie-crt']['path'])))
 
 def uninstall_scripts():
     script_list = [
-            {
-                'path':os.path.join('/','usr','bin'),
-                'filenames' : ['chvideo','consoledisp']
-            },
-            {
-                'path':os.path.join('/','opt','retropie','configs','all'),
-                'filenames' : ['runcommand-onlaunch.sh','runcommand-onend.sh']
-            }
+            paths['chvideo_consoledisp'],
+            paths['chvideo_consoledisp_symlinks'],
+            paths['runcommand']
         ]
     
-    for scripts in script_list:
-        for filename in scripts['filenames']:
+    for script in script_list:
+        for filename in script['filenames']:
             try:
-                path = os.path.join(scripts['path'],filename)
+                path = os.path.join(target_path(script['path']),filename)
                 os.remove(path)
                 print('File: \33[1;49;92m"%s"\33[0m uninstalled.' % path)
-            except Exception as e:
-                print('Error removing the file \33[1;49;31m"%s"\33[0m. %s' % (path,e.strerror))
+            except PermissionError as e:
+                raise PermissionError('Permission error when removing \33[1;49;31m"%s"\33[0m. %s' % (path,e.strerror))
+            except FileNotFoundError as e:
+                raise FileNotFoundError('The file does not exist: \33[1;49;31m"%s"\33[0m. %s' % (path,e.strerror))
+    uninstall_directory()
 
 
 def install_chvideo_consoledisp():
-    scripts = [
-        ['chvideo.py','chvideo'],
-        ['consoledisp.py','consoledisp']
-    ]
-    path = os.path.join('usr','bin')
-    origin_path = os.path.join(resources,path)
-    dest_path = os.path.join('/',path)
-    install_scripts(scripts,origin_path,dest_path)
+    path = paths['chvideo_consoledisp']['path']
+    install_scripts(paths['chvideo_consoledisp']['filenames'],origin_path(path),target_path(path))
+    path = paths['chvideo_consoledisp_symlinks']['path']
+    install_scripts(paths['chvideo_consoledisp_symlinks']['filenames'],origin_path(path),target_path(path))
 
 def install_runcommand():
     scripts = [
         ['runcommand-onlaunch%s.sh' % ('-pal' if isPal else ''),'runcommand-onlaunch.sh'],
         ['runcommand-onend%s.sh' % ('-pal' if isPal else ''),'runcommand-onend.sh']
     ]
-    path = os.path.join('opt','retropie','configs','all')
-    origin_path = os.path.join(resources,path)
-    dest_path = os.path.join('/',path)
-    install_scripts(scripts,origin_path, dest_path)
+    path = paths['runcommand']['path']
+    install_scripts(scripts,origin_path(path), target_path(path))
 
 def get_platform_parameters(platform):
     arguments = ['consoledisp',platform,'-i','-j']
@@ -174,12 +195,12 @@ def get_platform_parameters(platform):
         proc = subprocess.Popen(arguments,stdout=PIPE)
         proc.wait()
         data, _ = proc.communicate()
-        if proc.returncode is 0:
+        if proc.returncode == 0:
             jsondata = data.decode('utf-8')
             scandata = json.loads(jsondata)
             return (str(scandata['x_resolution']),str(scandata['y_resolution']),str(scandata['vertical']['fps']))
-    except:
-        raise Exception("Unfortunately I was unable to properly obtain the parameters for the platform " + platform)
+    except FileNotFoundError:
+        raise FileNotFoundError("Unfortunately I was unable to properly obtain the parameters for the platform " + platform)
 
 def define_consoledisp_config(origin_cfg_path,platform):
     x,y,fps = get_platform_parameters(platform)
@@ -191,29 +212,30 @@ def define_consoledisp_config(origin_cfg_path,platform):
     
 
 def install_retroarch_cfg(install = True):
-    path = os.path.join('opt','retropie','configs')
-    origin_dir = os.path.join(resources,path)
-    dest_dir = os.path.join('/',path)
+    path = paths['retroarch_cfg']['path']
+    filename = paths['retroarch_cfg']['filename']
+    origin_dir = origin_path(path)
+    dest_dir = target_path(path)
     for platform in os.listdir(origin_dir):
-        config_path = os.path.join(origin_dir,platform,'retroarch.cfg')
-        target_path = os.path.join(dest_dir,platform,'retroarch.cfg')
-        if os.path.isfile(config_path) and os.path.isfile(target_path):
+        origin = os.path.join(origin_dir,platform,filename)
+        target = os.path.join(dest_dir,platform,filename)
+        if os.path.isfile(origin) and os.path.isfile(target):
             if install:
-                config_orig = define_consoledisp_config(config_path,platform)
-                install_cfg(config_orig,target_path)
+                config = define_consoledisp_config(origin,platform)
+                install_cfg(config,target)
             else:
-                uninstall_cfg(config_path,target_path)
+                uninstall_cfg(origin,target)
 
 def install_retroarch_core_options(install = True):
-    path = os.path.join('opt','retropie','configs','all')
-    config_filename = 'retroarch-core-options%s.cfg' % ('-pal' if isPal else '')
-    target_filename = 'retroarch-core-options.cfg'
-    config_path = os.path.join(resources,path,config_filename)
-    target_path = os.path.join('/',path,target_filename)
+    filename = paths['retroarch_core_options']['filename'] % ('-pal' if isPal else '')
+    target_filename= paths['retroarch_core_options']['filename'] % ''
+    path = paths['retroarch_core_options']['path']
+    origin = os.path.join(origin_path(path),filename)
+    target = os.path.join(target_path(path),target_filename)
     if install:
-        install_cfg(config_path,target_path)
+        install_cfg(origin,target)
     else:
-        uninstall_cfg(config_path,target_path)
+        uninstall_cfg(origin,target)
 
 def install():
     print("Welcome to the setup script. I'll be your host during this process. Sit down, make a mug of coffee and relax during the installation.\n")

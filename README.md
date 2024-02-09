@@ -12,13 +12,13 @@ But, how do I connect the Raspberry Pi to a CRT display using the HDMI output?
 
 To manage that, it's needed to have two things.
 
-A CRT display that is capable of managing the standard video modes with the proper inputs, like RGB or YPbPr and a converter box from HDMI to the desired connection like an HDMI to YPbPr (component) or HDMI to RGB SCART.
+A CRT display that is capable of managing the standard video modes with the proper inputs, like RGB or YPbPr, and a converter box from HDMI to the desired connection like an HDMI to YPbPr (component) or HDMI to RGB SCART.
 
-Most television sets manufactured for the American market in the early 2000 tend to have the component YPbPr inputs. Important to say that I'm not talking about only North America, but the whole American continent. If we talk about the European market, the set from the same period tends to have the SCART input connection, allowing the same purpose, but changing the connection and the colour space.
+Most television sets manufactured for the American market in the early 2000s tend to have the component YPbPr inputs. Important to say that I'm not talking about only North America, but the whole American continent. If we talk about the European market, the set from the same period tends to have the SCART input connection, allowing the same purpose, but changing the connection and the color space.
 
-I tested with a cheap Chinese HDMI to YPbPr converter brought from Aliexpress. I believe that other converters, like HDMI to VGA or HDMI to SCART will also work as well. Be aware that if you're wanting to use an HDMI to VGA adapter for outputting to a CRT VGA Display, the intended display must be capable of handling the 15Khz signal. In a near future, I can manage to add the 31Khz support. But currently, it's not supported.
+I tested with a cheap Chinese HDMI to YPbPr converter brought from Aliexpress. I believe that other converters, like HDMI to VGA or HDMI to SCART will also work as well. Be aware that if you want to use an HDMI to VGA adapter for outputting to a CRT VGA Display, the intended display must be capable of handling the 15Khz signal. Shortly, I can manage to add the 31Khz support. But currently, it's not supported.
 
-The set of scripting basically it's composed of two python scripts. The "chvideo.py" and "consoledisp.py".
+The set of scripting is composed of two Python scripts. The "chvideo.py" and "consoledisp.py".
 
 ### chvideo.py
 
@@ -27,6 +27,10 @@ This script drives the "vcgencmd" for outputting the desired video mode accordin
 ### consoledisp.py
 
 This one has all the intended modes and manages the customizable settings for the target platform emulated. Driving the "chvideo" script.
+
+### chvideocore.py
+
+Check for the Retroarch core's geometry specs and configure the chvideo.py to match the intended game (currently enabled only for arcades).
 
 ## Requiriments
 
@@ -42,15 +46,15 @@ This one has all the intended modes and manages the customizable settings for th
 > ssh pi@retropie 'bash <(curl -s https://raw.githubusercontent.com/cjuniorfox/retropie-crt/main/setup.sh)'
 * Type the Raspberry's password if asked. The default password generally it's 'raspberry'.
 * The automated tool will install all the files needed. Then finishes, a new option will be available from the Emulationstation's Retropie option menu called 'RETROPIE-CRT'.It isn't, will be needed to restart the Emulationstation.
-* A new option will be available from the Emulationstation's Retropie option menu called 'RETROPIE-CRT'. To enable the CRT display settings, go to that option and enable the desired display mode between 625 50Hz (aka PAL), 525 60Hz (aka NTSC) or switch back to HDMI mode choosing HDTV.
+* A new option will be available from the Emulationstation's Retropie option menu called 'RETROPIE-CRT'. To enable the CRT display settings, go to that option and enable the desired display mode between 625 50Hz (aka PAL), and 525 60Hz (aka NTSC) or switch back to HDMI mode choosing HDTV.
 
-Important: Don't plug the Raspberry into the CRT display before applying the configuration unless you know your set is capable of handling HDTV signals, with the risk of harming the set deflection circuitry if you do so.
+Important: Don't plug the Raspberry into the CRT display before applying the configuration unless you know your set can handle HDTV signals, with the risk of harming the set deflection circuitry if you do so.
 
 ## Configuring the CRT Television modes.
 
 At the first setup, keep your Raspberry connected to an HDTV-capable display over the HDMI and follow the steps below.
 
-.With the gamepad, navigate to the Retropie Menu and then, choose "RETROPIE-CRT" options menu.
+.With the gamepad, navigate to the Retropie Menu and then, choose the "RETROPIE-CRT" options menu.
 ![Retropie-CRT menu](main_menu.png)
 
 Choose the most appropriate option for your needs. You have three options.

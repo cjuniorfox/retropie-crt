@@ -66,7 +66,7 @@ def is_pal_by_lines(lines):
     max_i = 580
     min_p = 253
     max_p = 290
-    logging.debug("Checking if is PAL by vertical resolution (lines). If lines is between {} and {} (progressive), or {} and {} (interlaced)  {}".format( min_i, max_i, min_p, max_p, fps))
+    logging.debug("Checking if is PAL by vertical resolution (lines). If lines is between {} and {} (progressive), or {} and {} (interlaced)  {}".format( min_i, max_i, min_p, max_p, lines))
     return (min_i <= lines <= max_i) or (min_p <= lines <= max_p)
 
 def is_interlaced(freq):

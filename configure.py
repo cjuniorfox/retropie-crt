@@ -50,11 +50,14 @@ class ConfigParser:
                         settings[l.strip()] = ""
         return settings,includes
 
-    def dict_to_config(self, dict_list):
+    def dict_to_config(self, dict_list, with_spaces = True):
         conf = []
         for key, val in dict_list.items():
             if val.strip() != '':
-                conf.append(f"{key} = {val}")
+                if with_spaces:
+                    conf.append(f"{key} = {val}")
+                else:
+                    conf.append(f"{key}={val}")
             else:
                 conf.append(f"{key}")
         return conf
@@ -107,7 +110,7 @@ def write_new_file(lines,path,celebrating=True):
         else:
             raise PermissionError('I\'m having some permission error while trying to write the file \33[1;49;31m"%s"\33[0m and, I was unable to figure out which one is. Here\'s the exception:\n%d - %s' % (path,e.errno,e.strerror))
 
-def install_cfg(config,target_path):
+def install_cfg(config,target_path, with_spaces = True):
     if isinstance(config,str):
         with open(config) as file:
             new, new_inc = ConfigParser().config_to_dict(file.readlines())
@@ -117,7 +120,8 @@ def install_cfg(config,target_path):
         old,old_inc = ConfigParser().config_to_dict(file.readlines())
     #The _inc is the includes. To be placed at the end of the file
     merged = {**old, **new, **old_inc, **new_inc}
-    write_new_file(ConfigParser().dict_to_config(merged),target_path)
+    merged_config = ConfigParser().dict_to_config(merged,with_spaces)
+    write_new_file(merged_config,target_path)
     
 def uninstall_cfg(config_path,target_path):
     with open(config_path) as file:
@@ -140,10 +144,10 @@ def install_boot_cfg():
     with open(origin_path(path)) as file:
         for line in file:
             config.append(line.replace('%hdmi_timings%',timings))
-    install_cfg(config,target_path(path))
+    install_cfg(config,target_path(path),with_spaces=False)
 
 def uninstall_boot_cfg():
-    path = paths['boot_cfg']['path'];
+    path = paths['boot_cfg']['path']
     uninstall_cfg(origin_path(path),target_path(path))
 
 def install_scripts(scripts, origin_path, dest_path):   

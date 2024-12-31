@@ -8,12 +8,12 @@
 # $4 - the full command line used to launch the emulator.
 #
 
-
-systemName="$1"
-emuName="$2"
+system_name="$1"
+emu_name="$2"
+rom_file="$3"
 command="$4"
-if [[ "${systemName}" == "mame-libretro" ]]; then
-        chvideocore "${command}"
-else    
-        consoledisp "${systemName}" 2>&1> /dev/null
+if [[ "${system_name}" == "mame-libretro" ]]; then
+    chvideocore --command "${command}" --rom-file "${rom_file}"
+else
+    consoledisp "${system_name}"
 fi

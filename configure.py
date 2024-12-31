@@ -34,6 +34,35 @@ paths = {
     }
 }
 
+class ConfigParser:
+    def config_to_dict(self, config):
+        settings = {}
+        includes = {}
+        for l in config:
+            if '=' in l and not l.strip().startswith('#'):
+                k, v = l.strip().split("=",1)
+                settings[k.strip()] = v.strip()
+            else:
+                if l.strip() != '':
+                    if l.strip().startswith('#include'):
+                        includes[l.strip()] = ""
+                    else:
+                        settings[l.strip()] = ""
+        return settings,includes
+
+    def dict_to_config(self, dict_list, with_spaces = True):
+        conf = []
+        for key, val in dict_list.items():
+            if val.strip() != '':
+                if with_spaces:
+                    conf.append(f"{key} = {val}")
+                else:
+                    conf.append(f"{key}={val}")
+            else:
+                conf.append(f"{key}")
+        return conf
+    
+
 def origin_path(path):
     return os.path.join(resources,path)
 
@@ -69,10 +98,10 @@ def hdmi_timings(platform):
         raise FileNotFoundError("It's very embarrassing, but I was unable to properly run '%s'. Sorry." %  cmd[0])
 
 def write_new_file(lines,path,celebrating=True):
+    merged_lines = '\n'.join(lines)
     try:
-        raw = open(path,"w")
-        raw.writelines(lines)
-        raw.close()
+        with open(path,"w") as file:
+            file.write(merged_lines)
         if celebrating :
             print_celebrating(path)
     except PermissionError as e:
@@ -81,28 +110,18 @@ def write_new_file(lines,path,celebrating=True):
         else:
             raise PermissionError('I\'m having some permission error while trying to write the file \33[1;49;31m"%s"\33[0m and, I was unable to figure out which one is. Here\'s the exception:\n%d - %s' % (path,e.errno,e.strerror))
 
-def install_cfg(config,target_path):
+def install_cfg(config,target_path, with_spaces = True):
     if isinstance(config,str):
         with open(config) as file:
-            new_config = file.readlines()
+            new, new_inc = ConfigParser().config_to_dict(file.readlines())
     elif isinstance(config,list): 
-            new_config = config
-    properties = "(%s)" % "|".join(w.split("=")[0] for w in new_config)
-    target = []
-    i = 0
-    if not os.path.isfile(target_path):
-        open(target_path,'a').close()
+            new, new_inc = ConfigParser().config_to_dict(config)
     with open(target_path) as file:
-        for line in file:
-            if not re.search(properties,line):
-                target.append(line)
-            elif i < len(new_config): 
-                target.append(new_config[i])
-                i+=1
-    while i < len(new_config):
-        target.append(new_config[i])
-        i+=1
-    write_new_file(target,target_path)
+        old,old_inc = ConfigParser().config_to_dict(file.readlines())
+    #The _inc is the includes. To be placed at the end of the file
+    merged = {**old, **new, **old_inc, **new_inc}
+    merged_config = ConfigParser().dict_to_config(merged,with_spaces)
+    write_new_file(merged_config,target_path)
     
 def uninstall_cfg(config_path,target_path):
     with open(config_path) as file:
@@ -125,10 +144,10 @@ def install_boot_cfg():
     with open(origin_path(path)) as file:
         for line in file:
             config.append(line.replace('%hdmi_timings%',timings))
-    install_cfg(config,target_path(path))
+    install_cfg(config,target_path(path),with_spaces=False)
 
 def uninstall_boot_cfg():
-    path = paths['boot_cfg']['path'];
+    path = paths['boot_cfg']['path']
     uninstall_cfg(origin_path(path),target_path(path))
 
 def install_scripts(scripts, origin_path, dest_path):   

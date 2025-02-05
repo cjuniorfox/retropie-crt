@@ -69,18 +69,18 @@ def hdmi_timings(platform):
     except FileNotFoundError:
         raise FileNotFoundError("It's very embarrassing, but I was unable to properly run '%s'. Sorry." %  cmd[0])
 
-def write_new_file(lines,path,celebrating=True):
-    merged_lines = ''.join(lines)
+def write_new_file(result_configs,config_file,celebrating=True):
+    merged_lines = ''.join(result_configs)
     try:
-        with open(path,"w") as file:
+        with open(config_file,"w") as file:
             file.write(merged_lines)
         if celebrating :
-            print_celebrating(path)
+            print_celebrating(config_file)
     except PermissionError as e:
         if e.errno == 13:
-            raise PermissionError('I\'m having a hard time with a permission error while trying to write the \33[1;49;31m"%s"\33[0m.' % path)
+            raise PermissionError('I\'m having a hard time with a permission error while trying to write the \33[1;49;31m"%s"\33[0m.' % config_file)
         else:
-            raise PermissionError('I\'m having some permission error while trying to write the file \33[1;49;31m"%s"\33[0m and, I was unable to figure out which one is. Here\'s the exception:\n%d - %s' % (path,e.errno,e.strerror))
+            raise PermissionError('I\'m having some permission error while trying to write the file \33[1;49;31m"%s"\33[0m and, I was unable to figure out which one is. Here\'s the exception:\n%d - %s' % (config_file,e.errno,e.strerror))
 
 def install_cfg_file(config_file,new_config_file, uninstall = False):
     with open(config_file, 'r') as file:
@@ -136,8 +136,8 @@ def install_boot_cfg():
     with open(new_config_path) as file:
         for line in file:
             new_configs.append(line.replace('%hdmi_timings%',timings))
-    new_config = install_cfg(configs,new_configs)
-    write_new_file(new_config, config_path, celebrating=True)
+    result_config = install_cfg(configs,new_configs)
+    write_new_file(result_config, config_path, celebrating=True)
 
 def uninstall_boot_cfg():
     path = paths['boot_cfg']['path']
@@ -236,8 +236,8 @@ def install_retroarch_cfg(install = True):
                 new_configs = define_consoledisp_config(new_config_file,platform)
                 with open (config_file, 'r') as file:
                     configs = file.readlines()
-                merged_configs = install_cfg(configs,new_configs)
-                write_new_file(config_file,merged_configs)
+                result_configs = install_cfg(configs,new_configs)
+                write_new_file(result_configs,config_file)
             else:
                 install_cfg_file(config_file,new_config_file,uninstall=True)
 

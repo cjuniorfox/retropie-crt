@@ -33,34 +33,6 @@ paths = {
         'filename':'retroarch-core-options%s.cfg'
     }
 }
-
-class ConfigParser:
-    def config_to_dict(self, config):
-        settings = {}
-        includes = {}
-        for l in config:
-            if '=' in l and not l.strip().startswith('#'):
-                k, v = l.strip().split("=",1)
-                settings[k.strip()] = v.strip()
-            else:
-                if l.strip() != '':
-                    if l.strip().startswith('#include'):
-                        includes[l.strip()] = ""
-                    else:
-                        settings[l.strip()] = ""
-        return settings,includes
-
-    def dict_to_config(self, dict_list, with_spaces = True):
-        conf = []
-        for key, val in dict_list.items():
-            if val.strip() != '':
-                if with_spaces:
-                    conf.append(f"{key} = {val}")
-                else:
-                    conf.append(f"{key}={val}")
-            else:
-                conf.append(f"{key}")
-        return conf
     
 
 def origin_path(path):
@@ -98,7 +70,7 @@ def hdmi_timings(platform):
         raise FileNotFoundError("It's very embarrassing, but I was unable to properly run '%s'. Sorry." %  cmd[0])
 
 def write_new_file(lines,path,celebrating=True):
-    merged_lines = '\n'.join(lines)
+    merged_lines = ''.join(lines)
     try:
         with open(path,"w") as file:
             file.write(merged_lines)
@@ -110,45 +82,65 @@ def write_new_file(lines,path,celebrating=True):
         else:
             raise PermissionError('I\'m having some permission error while trying to write the file \33[1;49;31m"%s"\33[0m and, I was unable to figure out which one is. Here\'s the exception:\n%d - %s' % (path,e.errno,e.strerror))
 
-def install_cfg(config,target_path, with_spaces = True):
-    if isinstance(config,str):
-        with open(config) as file:
-            new, new_inc = ConfigParser().config_to_dict(file.readlines())
-    elif isinstance(config,list): 
-            new, new_inc = ConfigParser().config_to_dict(config)
-    with open(target_path) as file:
-        old,old_inc = ConfigParser().config_to_dict(file.readlines())
-    #The _inc is the includes. To be placed at the end of the file
-    merged = {**old, **new, **old_inc, **new_inc}
-    merged_config = ConfigParser().dict_to_config(merged,with_spaces)
-    write_new_file(merged_config,target_path)
+def install_cfg_file(config_file,new_config_file, uninstall = False):
+    with open(config_file, 'r') as file:
+        actual_configs = file.readlines()
     
-def uninstall_cfg(config_path,target_path):
-    with open(config_path) as file:
-        config = file.readlines()
-    #This outputs something like (properties1|properties2|properties)
-    properties = "(%s)" % "|".join(w.split("=")[0] for w in config)
-    target = []
-    with open(target_path) as file:
-        for line in file:
-            if not re.search(properties,line):
-                target.append(line)
-    write_new_file(target,target_path,False)
-    print('Uninstalled settings for \33[1;49;92m"%s"\33[0m as asked.' % target_path)
+    with open(new_config_file, 'r') as file2:
+        new_configs = file2.readlines()
+    
+    new_configs = uninstall_cfg(actual_configs, new_configs) if uninstall else install_cfg(actual_configs, new_configs)
+
+    write_new_file(new_configs, config_file, celebrating=True)
+
+def install_cfg(actual_configs, new_configs) :
+    new_dict = {line.split("=", 1)[0].strip(): line for line in new_configs if "=" in line and not line.startswith("#")}
+
+    updated_config = []
+
+    for line in actual_configs:
+        if line.startswith("#"):
+            updated_config.append(line)
+        elif line.split("=", 1)[0].strip() in new_dict:
+            updated_config.append(new_dict[line.split("=", 1)[0].strip()])
+            new_dict.pop(line.split("=", 1)[0].strip())
+        else:
+            updated_config.append(line)
+    
+    return updated_config
+
+def uninstall_cfg(actual_configs, new_configs):
+    new_dict = {line.split("=", 1)[0].strip(): line for line in new_configs if "=" in line and not line.startswith("#")}
+
+    updated_config = []
+
+    for line in actual_configs:
+        if line.startswith("#"):
+            updated_config.append(line)
+        elif line.split("=", 1)[0].strip() not in new_dict:
+            updated_config.append(new_dict[line.split("=", 1)[0].strip()])
+            new_dict.pop(line.split("=", 1)[0].strip())
+    
+    return updated_config
+
 
 def install_boot_cfg():
-    path = paths['boot_cfg']['path']
+    boot_cfg_file = paths['boot_cfg']['path']
+    with open(boot_cfg_file, 'r') as file:
+        configs = file.readlines()
     #Configurations to local array
     timings = hdmi_timings('emulationstation')
-    config = []
-    with open(origin_path(path)) as file:
+
+    new_configs = []
+    with open(origin_path(boot_cfg_file)) as file:
         for line in file:
-            config.append(line.replace('%hdmi_timings%',timings))
-    install_cfg(config,target_path(path),with_spaces=False)
+            new_configs.append(line.replace('%hdmi_timings%',timings))
+    new_config = install_cfg(configs,new_configs)
+    write_new_file(new_config, boot_cfg_file, celebrating=True)
 
 def uninstall_boot_cfg():
     path = paths['boot_cfg']['path']
-    uninstall_cfg(origin_path(path),target_path(path))
+    install_cfg_file(target_path(path),origin_path(path),uninstall=True)
 
 def install_scripts(scripts, origin_path, dest_path):   
     for script in scripts:
@@ -236,25 +228,28 @@ def install_retroarch_cfg(install = True):
     origin_dir = origin_path(path)
     dest_dir = target_path(path)
     for platform in os.listdir(origin_dir):
-        origin = os.path.join(origin_dir,platform,filename)
-        target = os.path.join(dest_dir,platform,filename)
-        if os.path.isfile(origin) and os.path.isfile(target):
+        new_config_file = os.path.join(origin_dir,platform,filename)
+        config_file = os.path.join(dest_dir,platform,filename)
+        if os.path.isfile(new_config_file) and os.path.isfile(config_file):
             if install:
-                config = define_consoledisp_config(origin,platform)
-                install_cfg(config,target)
+                new_configs = define_consoledisp_config(new_config_file,platform)
+                with open (config_file, 'r') as file:
+                    configs = file.readlines()
+                merged_configs = install_cfg(configs,new_configs)
+                write_new_file(config_file,merged_configs)
             else:
-                uninstall_cfg(origin,target)
+                install_cfg_file(config_file,new_config_file,uninstall=True)
 
 def install_retroarch_core_options(install = True):
     filename = paths['retroarch_core_options']['filename'] % ('-pal' if isPal else '')
     target_filename= paths['retroarch_core_options']['filename'] % ''
     path = paths['retroarch_core_options']['path']
-    origin = os.path.join(origin_path(path),filename)
-    target = os.path.join(target_path(path),target_filename)
+    new_config_file = os.path.join(origin_path(path),filename)
+    config_file = os.path.join(target_path(path),target_filename)
     if install:
-        install_cfg(origin,target)
+        install_cfg_file(config_file,new_config_file)
     else:
-        uninstall_cfg(origin,target)
+        install_cfg_file(config_file,new_config_file,uninstall=True)
 
 def install():
     print("Welcome to the setup script. I'll be your host during this process. Sit down, make a mug of coffee and relax during the installation.\n")

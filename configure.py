@@ -3,7 +3,7 @@ import json, subprocess, os, re, shutil, sys,random, argparse
 from subprocess import PIPE,Popen
 from pathlib import Path
 
-sys.tracebacklimit = 0
+#sys.tracebacklimit = 0
 
 paths = {
     'retropie-crt': {
@@ -93,12 +93,12 @@ def install_cfg_file(config_file,new_config_file, uninstall = False):
 
     write_new_file(new_configs, config_file, celebrating=True)
 
-def install_cfg(actual_configs, new_configs) :
+def install_cfg(configs, new_configs) :
     new_dict = {line.split("=", 1)[0].strip(): line for line in new_configs if "=" in line and not line.startswith("#")}
 
     updated_config = []
 
-    for line in actual_configs:
+    for line in configs:
         if line.startswith("#"):
             updated_config.append(line)
         elif line.split("=", 1)[0].strip() in new_dict:
@@ -107,7 +107,7 @@ def install_cfg(actual_configs, new_configs) :
         else:
             updated_config.append(line)
     
-    return updated_config
+    return updated_config + list(new_dict.values())
 
 def uninstall_cfg(actual_configs, new_configs):
     new_dict = {line.split("=", 1)[0].strip(): line for line in new_configs if "=" in line and not line.startswith("#")}
@@ -125,18 +125,19 @@ def uninstall_cfg(actual_configs, new_configs):
 
 
 def install_boot_cfg():
-    boot_cfg_file = paths['boot_cfg']['path']
-    with open(boot_cfg_file, 'r') as file:
+    new_config_path = origin_path(paths['boot_cfg']['path'])
+    config_path = target_path(paths['boot_cfg']['path'])
+    with open(config_path, 'r') as file:
         configs = file.readlines()
     #Configurations to local array
     timings = hdmi_timings('emulationstation')
 
     new_configs = []
-    with open(origin_path(boot_cfg_file)) as file:
+    with open(new_config_path) as file:
         for line in file:
             new_configs.append(line.replace('%hdmi_timings%',timings))
     new_config = install_cfg(configs,new_configs)
-    write_new_file(new_config, boot_cfg_file, celebrating=True)
+    write_new_file(new_config, config_path, celebrating=True)
 
 def uninstall_boot_cfg():
     path = paths['boot_cfg']['path']

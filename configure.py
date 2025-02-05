@@ -109,18 +109,14 @@ def install_cfg(configs, new_configs) :
     
     return updated_config + list(new_dict.values())
 
-def uninstall_cfg(actual_configs, new_configs):
+def uninstall_cfg(configs, new_configs):
     new_dict = {line.split("=", 1)[0].strip(): line for line in new_configs if "=" in line and not line.startswith("#")}
 
     updated_config = []
 
-    for line in actual_configs:
-        if line.startswith("#"):
+    for line in configs:
+        if line.startswith("#") or line.split("=", 1)[0].strip() not in new_dict:
             updated_config.append(line)
-        elif line.split("=", 1)[0].strip() not in new_dict:
-            updated_config.append(new_dict[line.split("=", 1)[0].strip()])
-            new_dict.pop(line.split("=", 1)[0].strip())
-    
     return updated_config
 
 

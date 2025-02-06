@@ -107,6 +107,10 @@ def install_cfg(configs, new_configs) :
         else:
             updated_config.append(line)
     
+    # If the last line of the file does not break the line, add a breakline before adding new itens
+    if line[-1].endswith("\n"):
+        updated_config.append("\n")
+    
     return updated_config + list(new_dict.values())
 
 def uninstall_cfg(configs, new_configs):

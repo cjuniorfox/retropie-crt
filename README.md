@@ -1,5 +1,7 @@
-# retropie-crt
+# RetroPie-CRT
+
 This project enables Raspberry Pi with Retropie to work with the native display modes for the emulated content. It manages things like scanline configuration (progressive or interlaced), refresh rate, and pixel aspect ratio.
+
 ## Disclaimer
 
 The Raspberry Pi it's an amazing device highly customizable.
@@ -43,14 +45,16 @@ Check for the Retroarch core's geometry specs and configure the chvideo.py to ma
 
 * Enable the SSH at raspi-config as [described here](https://retropie.org.uk/docs/SSH/).
 * From the same network and any command-line tool like Terminal or CMD, copy and paste the commands below.
-> ssh pi@retropie 'bash <(curl -s https://raw.githubusercontent.com/cjuniorfox/retropie-crt/main/setup.sh)'
+
+> `ssh pi@retropie 'bash <(curl -s https://raw.githubusercontent.com/cjuniorfox/retropie-crt/main/setup.sh)'`
+
 * Type the Raspberry's password if asked. The default password generally it's 'raspberry'.
 * The automated tool will install all the files needed. Then finishes, a new option will be available from the Emulationstation's Retropie option menu called 'RETROPIE-CRT'.It isn't, will be needed to restart the Emulationstation.
 * A new option will be available from the Emulationstation's Retropie option menu called 'RETROPIE-CRT'. To enable the CRT display settings, go to that option and enable the desired display mode between 625 50Hz (aka PAL), and 525 60Hz (aka NTSC) or switch back to HDMI mode choosing HDTV.
 
 Important: Don't plug the Raspberry into the CRT display before applying the configuration unless you know your set can handle HDTV signals, with the risk of harming the set deflection circuitry if you do so.
 
-## Configuring the CRT Television modes.
+## Configuring the CRT Television modes
 
 At the first setup, keep your Raspberry connected to an HDTV-capable display over the HDMI and follow the steps below.
 
@@ -59,11 +63,41 @@ At the first setup, keep your Raspberry connected to an HDTV-capable display ove
 
 Choose the most appropriate option for your needs. You have three options.
 
-- SDTV - 525 60Hz aka NTSC (Americas/Japan) - It's the common option to play most of the systems as if you're emulating an American or Japanese set.
-- SDTV - 625 50Hz aka PAL (Europe/Asia/Africa) - Enables the PAL mode, to run at 50 Hz sets.
-- HDTV - Make the HDMI behave as normal for HDTV. Be aware this option does not uninstall the tool itself but just switches back the configuration of Raspberry's HDMI output.
+* SDTV - 525 60Hz aka NTSC (Americas/Japan) - It's the common option to play most of the systems as if you're emulating an American or Japanese set.
+* SDTV - 625 50Hz aka PAL (Europe/Asia/Africa) - Enables the PAL mode, to run at 50 Hz sets.
+* HDTV - Make the HDMI behave as normal for HDTV. Be aware this option does not uninstall the tool itself but just switches back the configuration of Raspberry's HDMI output.
 
-# CHANGELOG
+## Arcade games
 
-- Fixes some texting
-- Added minimal support for users with composite video mode.
+Every arcade game has its own resolution. At the first time you start a arcade game, Retropie-CRT script addresses that by querying what the resolution is for the game before starting it.
+The retrieved data is stored as `rom_name-crt.json` at the same path as the rom itself.
+
+Example:
+
+I have the **Sunset Riders** at the `/home/RetroPie/roms/mame` folder as `ssriders.zip`. The resolution file is `ssriders-crt.json`.
+
+### Contents of `game-crt.json`
+
+In the aftermentioned example, **Sunset Riders** runs at 228 x 224 at 60 Hz resolution. So its json looks like this:
+
+```json
+{
+    "width": 288,
+    "lines": 224,
+    "fps": "60.00",
+    "pal": false,
+    "overscan_left": 10,
+    "overscan_right": 10
+}
+```
+
+### Edit game resolution
+
+There are games that starts at some resolution, changing it to a different one during gameplay. Because the script queries the game resolution during its initialization, some games ends up running at the wrong resolution. To fix that, you can edit the `json` file by setting up the correct resolution for its game.
+
+## CHANGELOG
+
+* Fixed configure.py installer script.
+* Added custom resolutions for arcade games.
+* Fixes some texting
+* Added minimal support for users with composite video mode.

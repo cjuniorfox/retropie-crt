@@ -4,11 +4,11 @@ This project enables Raspberry Pi with Retropie to work with the native display 
 
 ## Disclaimer
 
-The Raspberry Pi it's an amazing device highly customizable.
+The Raspberry Pi is an amazing device highly customizable.
 
 Bundled with Raspberry Pi OS, the basis of the Retropie distribution, it has a tool called "vcgencmd" which allows customizing the video output settings in a detailed way. It's possible to set technical parameters, like sync pulse interval or pixel aspect ratio, it's allowing to represent the original behavior of the emulated content at the intended CRT faithful as possible.
 
-Those scripts manage the "vcgemcmd" tool making the needed calculations and switching modes on the fly. Meaning that when you're browsing over the Emulationstation, the display settings will be optimized for that content, displaying at a standard resolution of 640x480i at 60Hz, or 640x576 at 50Hz, if the "aka PAL settings" was enabled. While managing to have the display outputting the proper settings for the target emulated platform.
+Those scripts manage the "vcgemcmd" tool making the needed calculations and switching modes on the fly. Meaning that when you're browsing over the Emulationstation, the display settings will be optimized for that content, displaying at a standard resolution of 640x480i at 60Hz, or 640x576 at 50Hz, if the "aka PAL settings" was enabled. At the same time, managing to have the display outputting the proper settings for the target emulated platform.
 
 But, how do I connect the Raspberry Pi to a CRT display using the HDMI output?
 
@@ -38,7 +38,7 @@ Check for the Retroarch core's geometry specs and configure the chvideo.py to ma
 
 * A Raspberry Pi. Tested at the Raspberry Pi 3. As far as the "vcgemcmd" tool exists, it should work.
 * Retropie installed.
-* An HDMI to analog display signal converter. Be aware that it needs to be a simple converter without any video processing. Just search for "HDMI to YPbPr" or "HDMI to VGA"  in any online Chinese store.
+* An HDMI to analog display signal converter. Make sure that it needs to be a simple converter without any video processing. Just search for "HDMI to YPbPr" or "HDMI to VGA"  in any online Chinese store.
 ![HDMI to Component Adapter](hdmi_to_component.png)
 
 ## Initial setup
@@ -50,18 +50,18 @@ Check for the Retroarch core's geometry specs and configure the chvideo.py to ma
 
 * Type the Raspberry's password if asked. The default password generally it's 'raspberry'.
 * The automated tool will install all the files needed. Then finishes, a new option will be available from the Emulationstation's Retropie option menu called 'RETROPIE-CRT'.It isn't, will be needed to restart the Emulationstation.
-* A new option will be available from the Emulationstation's Retropie option menu called 'RETROPIE-CRT'. To enable the CRT display settings, go to that option and enable the desired display mode between 625 50Hz (aka PAL), and 525 60Hz (aka NTSC) or switch back to HDMI mode choosing HDTV.
+* A new option will be available from the Emulationstation's Retropie option menu named 'RETROPIE-CRT'. To enable the CRT display settings, go to that option and enable the desired display mode between 625 50Hz (aka PAL), and 525 60Hz (aka NTSC) or switch back to HDMI mode choosing HDTV.
 
 Important: Don't plug the Raspberry into the CRT display before applying the configuration unless you know your set can handle HDTV signals, with the risk of harming the set deflection circuitry if you do so.
 
 ## Configuring the CRT Television modes
 
-At the first setup, keep your Raspberry connected to an HDTV-capable display over the HDMI and follow the steps below.
+At the first setup, keep the Raspberry connected to an HDTV-capable display over the HDMI and follow the steps below.
 
-.With the gamepad, navigate to the Retropie Menu and then, choose the "RETROPIE-CRT" options menu.
+.Using the gamepad, navigate to the Retropie Menu, and then, choose the "RETROPIE-CRT" options menu.
 ![Retropie-CRT menu](main_menu.png)
 
-Choose the most appropriate option for your needs. You have three options.
+Select the appropriate option for your needs. You have three options.
 
 * SDTV - 525 60Hz aka NTSC (Americas/Japan) - It's the common option to play most of the systems as if you're emulating an American or Japanese set.
 * SDTV - 625 50Hz aka PAL (Europe/Asia/Africa) - Enables the PAL mode, to run at 50 Hz sets.
@@ -69,16 +69,16 @@ Choose the most appropriate option for your needs. You have three options.
 
 ## Arcade games
 
-Every arcade game has its own resolution. At the first time you start a arcade game, Retropie-CRT script addresses that by querying what the resolution is for the game before starting it.
-The retrieved data is stored as `rom_name-crt.json` at the same path as the rom itself.
+Every arcade game has its own resolution. The first time you start an arcade game, the Retropie-CRT script addresses that by querying what the resolution is for the game before starting it.
+The retrieved data is stored as `rom_name-crt.json` at the same path as the ROM itself.
 
 Example:
 
-I have the **Sunset Riders** at the `/home/RetroPie/roms/mame` folder as `ssriders.zip`. The resolution file is `ssriders-crt.json`.
+I have the **Sunset Riders** in the `/home/RetroPie/roms/mame` folder as `ssriders.zip`. The resolution file is `ssriders-crt.json`.
 
 ### Contents of `game-crt.json`
 
-In the aftermentioned example, **Sunset Riders** runs at 228 x 224 at 60 Hz resolution. So its json looks like this:
+In the aftermentioned example, **Sunset Riders** runs at 228 x 224 at 60 Hz resolution. So its JSON looks like this:
 
 ```json
 {
@@ -93,7 +93,7 @@ In the aftermentioned example, **Sunset Riders** runs at 228 x 224 at 60 Hz reso
 
 ### Edit game resolution
 
-There are games that starts at some resolution, changing it to a different one during gameplay. Because the script queries the game resolution during its initialization, some games ends up running at the wrong resolution. To fix that, you can edit the `json` file by setting up the correct resolution for its game.
+Some games start at some resolution, changing to a different one during gameplay. Because the script queries the game resolution during its initialization, some games end up running at the wrong resolution. To fix that, you can edit the `json` file by setting up the correct resolution for its game.
 
 ## CHANGELOG
 

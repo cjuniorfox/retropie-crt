@@ -3,7 +3,7 @@ import json, subprocess, os, re, shutil, sys,random, argparse
 from subprocess import PIPE,Popen
 from pathlib import Path
 
-#sys.tracebacklimit = 0
+sys.tracebacklimit = 0
 
 paths = {
     'retropie-crt': {

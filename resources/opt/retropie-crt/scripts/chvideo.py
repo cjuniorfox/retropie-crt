@@ -4,8 +4,8 @@ from subprocess import Popen, PIPE, DEVNULL
 
 class Specs:
     class Horizontal:
-        def __init__(self,is_pal):
-            if is_pal:
+        def __init__(self,is_50hz):
+            if is_50hz:
                 self.front_porch = 0.025
                 self.sync_pulse = 0.074
                 self.back_porch = 0.088
@@ -16,8 +16,8 @@ class Specs:
             self.blanking_interval = self.front_porch + self.back_porch + self.sync_pulse
             self.image = 1.000 - self.blanking_interval
     class Vertical:
-        def __init__(self,is_pal, interlaced):
-            if is_pal:
+        def __init__(self,is_50hz, interlaced):
+            if is_50hz:
                 self.scanlines = 312.5 if interlaced else 312
                 self.lines = 288
                 self.back_porch = 18
@@ -29,9 +29,9 @@ class Specs:
             self.front_porch = 3
             self.sync_pulse = self.scanlines - self.lines - self.back_porch - self.front_porch
 
-    def __init__(self,is_pal, interlaced):
-        self.vertical = Specs.Vertical(is_pal, interlaced)
-        self.horizontal = Specs.Horizontal(is_pal)
+    def __init__(self,is_50hz, interlaced):
+        self.vertical = Specs.Vertical(is_50hz, interlaced)
+        self.horizontal = Specs.Horizontal(is_50hz)
         
 
 class VerticalClock:
@@ -44,8 +44,8 @@ class VerticalClock:
         self.blanking_interval = self.front_porch + self.sync_pulse + self.back_porch
 
 class Vertical:
-    def __init__(self, frequency, overscan, is_pal, interlaced):
-        specs = Specs(is_pal,interlaced)
+    def __init__(self, frequency, overscan, is_50hz, interlaced):
+        specs = Specs(is_50hz,interlaced)
         self.scanlines = specs.vertical.scanlines
         self.image = specs.vertical.lines - overscan.top - overscan.bottom
         self.front_porch = specs.vertical.front_porch + overscan.bottom
@@ -101,12 +101,12 @@ class HorizontalClock:
         self.image = self.scanline * specs.horizontal.image
 
 class Scan :
-    def __init__(self,x_resolution, is_pal, interlaced, frequency, overscan,rep):
+    def __init__(self,x_resolution, is_50hz, interlaced, frequency, overscan,rep):
         beam = 1000
         frame_fields = (2 if interlaced else 1)
         self.interlaced = int(interlaced)
-        specs = Specs(is_pal, interlaced)
-        self.vertical = Vertical(frequency,overscan, is_pal, interlaced)
+        specs = Specs(is_50hz, interlaced)
+        self.vertical = Vertical(frequency,overscan, is_50hz, interlaced)
         self.horizontal_clock = HorizontalClock(self.vertical,specs,beam)
         self.vertical_clock = VerticalClock(self.vertical,beam)
         self.horizontal = Horizontal(x_resolution,self.horizontal_clock,overscan,rep)
@@ -117,14 +117,14 @@ class Scan :
         
 
 
-def calc_overscan(left, right, top, bottom, lines, is_pal, interlaced) :
-    specs = Specs(is_pal,interlaced)
+def calc_overscan(left, right, top, bottom, lines, is_50hz, interlaced) :
+    specs = Specs(is_50hz,interlaced)
     resolution = specs.vertical.lines if not interlaced else specs.vertical.lines * 2
     return Overscan(
         left,
         right,
-        top if lines == 0 else round((resolution - lines) / 2),
-        bottom if lines == 0 else round((resolution - lines) / 2)
+        top if lines == 0 else round((resolution - min(LINES_CALC,lines)) / 2),
+        bottom if lines == 0 else round((resolution - min(LINES_CALC,lines)) / 2)
     )
 
 def adjust_number_within_range(number, min_value, max_value):
@@ -138,22 +138,22 @@ def adjust_number_within_range(number, min_value, max_value):
     else:
         return number
 
-def calc_freq(freq,pal):
+def calc_freq(freq,is_50hz):
     freq = float(freq)
-    min_pal = 49.5
-    max_pal = 50.5
-    min_ntsc = 58
-    max_ntsc = 62
+    min_50hz = 49.5
+    max_50hz = 50.5
+    min_60hz = 58
+    max_60hz = 62
 
     if freq == 0:
-        freq = 60 if not pal else 50
-    return adjust_number_within_range(freq,min_pal,max_pal) if pal else adjust_number_within_range(freq,min_ntsc,max_ntsc)
+        freq = 60 if not is_50hz else 50
+    return adjust_number_within_range(freq,min_50hz,max_50hz) if is_50hz else adjust_number_within_range(freq,min_60hz,max_60hz)
 
-def calc_timings(x_resolution,pal,interlaced,freq,overscan,rep):
+def calc_timings(x_resolution,is_50hz,interlaced,freq,overscan,rep):
     if interlaced : #If interlaced, divide the vertical resolution
         overscan.top = round(overscan.top/2)
         overscan.bottom = round(overscan.bottom/2)
-    timing = Scan(x_resolution, pal, interlaced, calc_freq(freq,pal), overscan,rep)
+    timing = Scan(x_resolution, is_50hz, interlaced, calc_freq(freq,is_50hz), overscan,rep)
     return timing
     
 def hdmi_timings(timing):
@@ -205,7 +205,7 @@ def xrandr_scale(timing):
     horizontal = 1 if timing.horizontal.rep == 1 else 1 / timing.horizontal.rep
     return str(horizontal)+"x"+str(vertical)
 
-def verbosely(timing,pal, interlaced):
+def verbosely(timing,is_50hz, interlaced):
     templ_vert = '\t{:<12}: {:>8} lines - {:>6.2f} (nS)'
     templ_horz = '\t{:<12}: {:>8} px - {:>6.2f} (uS)'
     templ_freq = '\t{:<12}: {:>8.0f} Hz'
@@ -226,7 +226,7 @@ def verbosely(timing,pal, interlaced):
     print(templ_horz.format("Total blank",timing.horizontal.blanking_interval,timing.horizontal_clock.blanking_interval))
     print(templ_freq.format("Frequency",timing.vertical.scanlines * timing.vertical.frequency))
     print(templ_freq.format("Pixel Clock",timing.pixel_clock))
-    print("\nBroadcast    :","System-M (NTSC/PAL-M)" if not pal else "System-B/D/G/H/I/K/N (PAL-EU/SECAM)")
+    print("\nBroadcast    :","System-M (NTSC/PAL-M)" if not is_50hz else "System-B/D/G/H/I/K/N (PAL-EU/SECAM)")
     print('Resolution   : {}x{}'.format(timing.x_resolution,timing.y_resolution))
     print('Frames       : {:.2f}'.format(timing.fps))
     print("")
@@ -264,8 +264,8 @@ def apply_xrandr(timings, output, options):
             output = output + options.split(" ")
         _exec=Popen(output)
 
-def set_composite_mode(timings,is_pal,is_progressive):
-    system = 'PAL' if is_pal else 'NTSC'
+def set_composite_mode(timings,is_50hz,is_progressive):
+    system = 'PAL' if is_50hz else 'NTSC'
     progressive = 'P' if is_progressive else ''
     argument = '%s 4:3 %s' % (system, progressive)
     _exec = Popen([tvservice,'-c',argument])
@@ -275,17 +275,16 @@ def set_composite_mode(timings,is_pal,is_progressive):
 def is_hdmi_connected():
     return 'HDMI' in str(Popen([tvservice,'-l'],stdout=PIPE).communicate()[0])
 
-def calc_lines(lines,pal,interlaced) :
-    specs = Specs(pal,interlaced)
+def calc_lines(lines,is_50hz,interlaced) :
+    specs = Specs(is_50hz,interlaced)
     if lines == 0 : 
         return specs.vertical.resolution
     return adjust_number_within_range(lines,80,specs.vertical.resolution)
 
-def set_interlaced_by_resolution(lines,pal) :
-    specs = Specs(pal,True)
-    if lines > (specs.vertical.lines + specs.vertical.back_porch) * 2:
-        raise( ValueError('Unable to set vertical resolution above {} lines'.format(lines)))
-    return lines > specs.vertical.lines + specs.vertical.back_porch #Check for specs assuming interlaced as default
+def set_interlaced_by_resolution(lines,is_50hz) :
+    specs = Specs(is_50hz,True)
+    # If lines are above to progressive max resolution, set as interlaced (true) otherwise set as progressive (false).
+    return lines > specs.vertical.lines + specs.vertical.back_porch 
 
 tvservice = os.path.join('/','usr','bin','tvservice')
 parser = argparse.ArgumentParser(description="Switch the HDMI output resolution for SDTV friendly modes")
@@ -311,9 +310,9 @@ interlaced = not args.progressive
 if args.lines > 0 : 
     interlaced = set_interlaced_by_resolution(args.lines, args.pal)
 
-lines = calc_lines(int(args.lines),args.pal,interlaced)
+LINES_CALC = calc_lines(int(args.lines),args.pal,interlaced)
 
-overscan = calc_overscan(args.overscan_left, args.overscan_right, args.overscan_top, args.overscan_bottom, lines, args.pal, interlaced)
+overscan = calc_overscan(args.overscan_left, args.overscan_right, args.overscan_top, args.overscan_bottom, args.lines, args.pal, interlaced)
 
 timings = calc_timings(args.width, 
     args.pal, 

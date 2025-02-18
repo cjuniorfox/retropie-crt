@@ -160,7 +160,7 @@ def hdmi_timings(timing):
     rep = 0 if timing.horizontal.rep == 1 else timing.horizontal.rep
 
     return 'hdmi_timings {} 1 {} {} {} {} 1 {} {:.0f} {} 0 0 {} {} {} {:.0f} 1'.format(
-        timing.horizontal.image,
+        timing.horizontal.image + timing.overscan.left + timing.overscan.right,
         timing.horizontal.front_porch,
         timing.horizontal.sync_pulse,
         timing.horizontal.back_porch,
@@ -180,7 +180,7 @@ def outputjson(timing):
 def modeline(timing):
     fps = timing.fps
     clk = timing.pixel_clock/1000000
-    hzn = timing.horizontal.image             #horizontal res
+    hzn = timing.horizontal.image + timing.overscan.left + timing.overscan.right #horizontal res
     hfp = hzn + timing.horizontal.front_porch #horizonal front porch
     hsp = hfp + timing.horizontal.sync_pulse  #horizontal sync pulse
     hbp = hsp + timing.horizontal.back_porch  #horizontal back porch

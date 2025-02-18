@@ -81,7 +81,7 @@ class Horizontal:
 
     def __init__(self,image,horizontal_clock,overscan,rep):
         self.define_scan_and_rep(image,horizontal_clock,overscan,rep)
-        self.image = image * self.rep
+        self.image = (image + overscan.left + overscan.right) * self.rep
         #Overscan right at the front porch
         self.front_porch = round(self.scanline * (horizontal_clock.front_porch / horizontal_clock.scanline))
         self.sync_pulse = round(self.scanline * (horizontal_clock.sync_pulse / horizontal_clock.scanline)) 
@@ -160,7 +160,7 @@ def hdmi_timings(timing):
     rep = 0 if timing.horizontal.rep == 1 else timing.horizontal.rep
 
     return 'hdmi_timings {} 1 {} {} {} {} 1 {} {:.0f} {} 0 0 {} {} {} {:.0f} 1'.format(
-        timing.horizontal.image + timing.overscan.left + timing.overscan.right,
+        timing.horizontal.image,
         timing.horizontal.front_porch,
         timing.horizontal.sync_pulse,
         timing.horizontal.back_porch,

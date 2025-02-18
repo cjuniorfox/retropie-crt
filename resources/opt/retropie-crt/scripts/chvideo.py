@@ -110,6 +110,7 @@ class Scan :
         self.horizontal_clock = HorizontalClock(self.vertical,specs,beam)
         self.vertical_clock = VerticalClock(self.vertical,beam)
         self.horizontal = Horizontal(x_resolution,self.horizontal_clock,overscan,rep)
+        self.overscan = overscan
         self.x_resolution = x_resolution
         self.y_resolution = self.vertical.image * frame_fields
         self.fps = self.vertical.fps

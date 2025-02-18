@@ -112,7 +112,8 @@ class Scan :
         self.horizontal = Horizontal(x_resolution,self.horizontal_clock,overscan,rep)
         self.overscan = overscan
         self.x_resolution = x_resolution
-        self.y_resolution = self.vertical.image * frame_fields
+        self.y_resolution = (self.vertical.image * frame_fields) - (overscan.top + overscan.bottom)
+        self.lines = self.vertical.image * frame_fields
         self.fps = self.vertical.fps
         self.pixel_clock = self.vertical.scanlines * self.horizontal.scanline * frequency
         
@@ -163,7 +164,7 @@ def hdmi_timings(timing):
         timing.horizontal.front_porch,
         timing.horizontal.sync_pulse,
         timing.horizontal.back_porch,
-        timing.y_resolution,
+        timing.lines,
         timing.vertical.front_porch,
         timing.vertical.sync_pulse,
         timing.vertical.back_porch,
@@ -183,7 +184,7 @@ def modeline(timing):
     hfp = hzn + timing.horizontal.front_porch #horizonal front porch
     hsp = hfp + timing.horizontal.sync_pulse  #horizontal sync pulse
     hbp = hsp + timing.horizontal.back_porch  #horizontal back porch
-    vrc = timing.y_resolution                 #vertical res
+    vrc = timing.lines                        #vertical res
     vfp = vrc + timing.vertical.front_porch   #vertical front porch
     vsp = vfp + timing.vertical.sync_pulse    #vertical sync pulse
     vbp = vsp + timing.vertical.back_porch    #vertical back porch
@@ -198,6 +199,7 @@ def modeline(timing):
     return " ".join(['"{}x{}_{:.0f}" {:.6f} {:.0f} {:.0f} {:.0f} {:.0f} {:.0f} {:.0f} {:.0f} {:.0f}'
                      .format(hzn,vrc,fps, clk, hzn, hfp, hsp, hbp,vrc,vfp,vsp,vbp),hsy,vsy,itl])
 
+#TODO: Revise xrand
 def xrandr_scale(timing):
     vertical = 1 if timing.interlaced and timing.x_resolution >= 512 else 2
     horizontal = 1 if timing.horizontal.rep == 1 else 1 / timing.horizontal.rep
@@ -231,11 +233,10 @@ def verbosely(timing,is_50hz, interlaced):
 
 def fbset(timings):
     time.sleep(0.5)
-    x_resolution = timings.x_resolution + timings.overscan.left + timings.overscan.right
     Popen([
         'fbset',
         '-depth', '32', 
-        '-xres',str(x_resolution), 
+        '-xres',str(timings.x_resolution), 
         '-yres',str(timings.y_resolution),
         '-left',str(timings.overscan.left),
         '-right',str(timings.overscan.right),

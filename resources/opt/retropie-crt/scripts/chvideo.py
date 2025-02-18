@@ -44,13 +44,13 @@ class VerticalClock:
         self.blanking_interval = self.front_porch + self.sync_pulse + self.back_porch
 
 class Vertical:
-    def __init__(self, frequency, overscan, is_50hz, interlaced):
+    def __init__(self, frequency, is_50hz, interlaced):
         specs = Specs(is_50hz,interlaced)
         self.scanlines = specs.vertical.scanlines
-        self.image = specs.vertical.lines - overscan.top - overscan.bottom
-        self.front_porch = specs.vertical.front_porch + overscan.bottom
+        self.image = specs.vertical.lines
+        self.front_porch = specs.vertical.front_porch
         self.sync_pulse = specs.vertical.sync_pulse
-        self.back_porch = specs.vertical.back_porch + overscan.top
+        self.back_porch = specs.vertical.back_porch
         self.blanking_interval = self.back_porch + self.front_porch + self.sync_pulse
         self.frequency = frequency
         self.fps = frequency if not interlaced else frequency / 2
@@ -83,7 +83,7 @@ class Horizontal:
         self.define_scan_and_rep(image,horizontal_clock,overscan,rep)
         self.image = image * self.rep
         #Overscan right at the front porch
-        self.front_porch = round(self.scanline * (horizontal_clock.front_porch / horizontal_clock.scanline) + (overscan.right * self.rep))
+        self.front_porch = round(self.scanline * (horizontal_clock.front_porch / horizontal_clock.scanline))
         self.sync_pulse = round(self.scanline * (horizontal_clock.sync_pulse / horizontal_clock.scanline)) 
         #Overscan left to the back porch
         #self.back_porch = round(self.scanline * (horizontal_clock.back_porch / horizontal_clock.scanline) + (overscan.left * self.rep))
@@ -106,7 +106,7 @@ class Scan :
         frame_fields = (2 if interlaced else 1)
         self.interlaced = int(interlaced)
         specs = Specs(is_50hz, interlaced)
-        self.vertical = Vertical(frequency,overscan, is_50hz, interlaced)
+        self.vertical = Vertical(frequency, is_50hz, interlaced)
         self.horizontal_clock = HorizontalClock(self.vertical,specs,beam)
         self.vertical_clock = VerticalClock(self.vertical,beam)
         self.horizontal = Horizontal(x_resolution,self.horizontal_clock,overscan,rep)
@@ -150,10 +150,7 @@ def calc_freq(freq,is_50hz):
     return adjust_number_within_range(freq,min_50hz,max_50hz) if is_50hz else adjust_number_within_range(freq,min_60hz,max_60hz)
 
 def calc_timings(x_resolution,is_50hz,interlaced,freq,overscan,rep):
-    if interlaced : #If interlaced, divide the vertical resolution
-        overscan.top = round(overscan.top/2)
-        overscan.bottom = round(overscan.bottom/2)
-    timing = Scan(x_resolution, is_50hz, interlaced, calc_freq(freq,is_50hz), overscan,rep)
+    timing = Scan(x_resolution, is_50hz, interlaced, calc_freq(freq,is_50hz),overscan,rep)
     return timing
     
 def hdmi_timings(timing):
@@ -233,7 +230,17 @@ def verbosely(timing,is_50hz, interlaced):
 
 def fbset(timings):
     time.sleep(0.5)
-    Popen(['fbset','-depth', '32', '-xres',str(timings.x_resolution), '-yres',str(timings.y_resolution)])
+    x_resolution = timings.x_resolution + timings.overscan.left + timings.overscan.right
+    Popen([
+        'fbset',
+        '-depth', '32', 
+        '-xres',str(x_resolution), 
+        '-yres',str(timings.y_resolution),
+        '-left',str(timings.overscan.left),
+        '-right',str(timings.overscan.right),
+        '-upper',str(timings.overscan.top),
+        '-lower',str(timings.overscan.bottom)
+    ])
 
 def apply_vcgencmd(timings):
     vcgencmd = [os.path.join('/','usr','bin','vcgencmd'),hdmi_timings(timings)]

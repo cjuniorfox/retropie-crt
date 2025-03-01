@@ -341,7 +341,7 @@ else :
             else :
                 apply_xrandr(timings, args.output, args.x11_options)
         else :
-            apply_vcgencmd(timings) if is_hdmi_connected() else set_composite_mode(timings,args.pal, args.progressive)
+            apply_vcgencmd(timings) if is_hdmi_connected() else set_composite_mode(timings,args.pal, not interlaced)
     except FileNotFoundError :
         print("Unable to apply the settings because either vcgencmd or tvservice was not found. Are you running on Pi?")
         print("Assuming you're running only just for information, follows below. Try next time using -i --info.")

@@ -127,14 +127,17 @@ def geometry_values_from_retroarch(match):
 
 def search_for_match(command):
     logging.debug("Executing Retroarch and searching for matches in the Retroarch logging output to extract the geometry values.")
-    timeout = 60 
+    timeout = 10
     process = subprocess.Popen(command + " --verbose", shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     start_time = time.time()
     res = None
     while True:
         line = process.stdout.readline()
+        logging.debug("Line: %s",line)
         if not line:
             break
+
+        '''Old match'''
         if b'Geometry' in line:
             logging.debug("Found line in the Retroarch's logging about geometry.")
             match = re.search(r'Geometry: (\d+)x(\d+).*FPS: ([\d.]+)', line.decode())
@@ -142,6 +145,14 @@ def search_for_match(command):
                 logging.debug("Geometry values found in the Retroarch's logging.")
                 res = geometry_values_from_retroarch(match)
             break
+
+        '''New match'''
+        match = re.search(r'(\d+)\s*x\s*(\d+).*?([\d.]+)\s*Hz',line.decode())
+        if match:
+            logging.debug("Geometry values found")
+            res = geometry_values_from_retroarch(match)
+            break
+
         if time.time() - start_time >= timeout:
             logging.critical("Timeout reached. Geometry value not found.")
             raise TimeoutError("Timeout looking for Geometry value while executing \"%s\"." % command)
